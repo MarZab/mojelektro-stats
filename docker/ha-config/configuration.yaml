@@ -1,0 +1,13 @@
+# Minimal Home Assistant config for local dev.
+# Everything not listed here uses HA defaults. The Moj Elektro integration
+# loads via ConfigFlow — no YAML needed.
+
+default_config:
+
+# Verbose logging for our integration + the lib so you can see fetch/dispatch
+# activity in `docker logs -f mojelektro-ha`.
+logger:
+  default: warning
+  logs:
+    custom_components.mojelektro: debug
+    mojelektro: debug

@@ -1,0 +1,26 @@
+line-length = 100
+target-version = "py312"
+
+[lint]
+select = [
+  "E", "F", "W",
+  "I",
+  "B",
+  "UP",
+  "SIM",
+  "ASYNC",
+  "RUF",
+  "TID",
+  "T20",
+  "PT",
+]
+ignore = []
+
+[lint.per-file-ignores]
+"tests/**" = ["T20", "PT017"]
+"cli/**" = ["T20", "B008"]
+"scripts/**" = ["T20"]
+"custom_components/mojelektro/lib/mojelektro/_generated/**" = ["E", "F", "W", "I", "B", "UP", "SIM", "ASYNC", "RUF", "TID", "T20"]
+
+[lint.isort]
+known-first-party = ["mojelektro", "cli", "custom_components"]

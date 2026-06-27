@@ -1,0 +1,150 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Moj Elektro",
+        "description": "Vnesite svoj API žeton za Moj Elektro.",
+        "data": {
+          "api_token": "API žeton",
+          "server": "Strežnik"
+        }
+      },
+      "add_usage_point": {
+        "title": "Dodaj merilno mesto",
+        "description": "Vnesite identifikator (kratka oblika, npr. 4-1234567) ali 18-mestni GSRN.",
+        "data": {
+          "identifikator": "Identifikator"
+        }
+      },
+      "configure_measurements": {
+        "title": "Nastavi meritve",
+        "description": "Za {naziv} ({identifikator}) — izberite katero koli kombinacijo Statistike in InfluxDB za vsako vrsto odčitka. Prazne vrstice se preskočijo.",
+        "data": {
+          "A_PLUS_15MIN": "Prejeta delovna energija, A+ (15 min, kWh)",
+          "A_MINUS_15MIN": "Oddana delovna energija, A- (15 min, kWh)",
+          "R_PLUS_15MIN": "Prejeta jalova energija, R+ (15 min, kVArh)",
+          "R_MINUS_15MIN": "Oddana jalova energija, R- (15 min, kVArh)",
+          "P_PLUS_15MIN": "Prejeta delovna moč, P+ (15 min, kW)",
+          "P_MINUS_15MIN": "Oddana delovna moč, P- (15 min, kW)",
+          "Q_PLUS_15MIN": "Prejeta jalova moč, Q+ (15 min, kVAr)",
+          "Q_MINUS_15MIN": "Oddana jalova moč, Q- (15 min, kVAr)",
+          "A_PLUS_T0_DAILY": "Stanje delovne energije, A+ T0 (kWh)",
+          "A_PLUS_T1_DAILY": "Stanje delovne energije, A+ T1 (kWh)",
+          "A_PLUS_T2_DAILY": "Stanje delovne energije, A+ T2 (kWh)",
+          "A_MINUS_T0_DAILY": "Stanje delovne energije, A- T0 (kWh)",
+          "A_MINUS_T1_DAILY": "Stanje delovne energije, A- T1 (kWh)",
+          "A_MINUS_T2_DAILY": "Stanje delovne energije, A- T2 (kWh)",
+          "R_PLUS_T0_DAILY": "Stanje jalove energije, R+ T0 (kVArh)",
+          "R_PLUS_T1_DAILY": "Stanje jalove energije, R+ T1 (kVArh)",
+          "R_PLUS_T2_DAILY": "Stanje jalove energije, R+ T2 (kVArh)",
+          "R_MINUS_T0_DAILY": "Stanje jalove energije, R- T0 (kVArh)",
+          "R_MINUS_T1_DAILY": "Stanje jalove energije, R- T1 (kVArh)",
+          "R_MINUS_T2_DAILY": "Stanje jalove energije, R- T2 (kVArh)"
+        }
+      },
+      "influxdb_config": {
+        "title": "Povezava z InfluxDB",
+        "data": {
+          "url": "URL",
+          "org": "Organizacija",
+          "bucket": "Bucket",
+          "token": "Žeton"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Neveljaven API žeton",
+      "cannot_connect": "Povezava z Moj Elektro ni mogoča",
+      "unknown": "Nepričakovana napaka",
+      "unknown_meter": "Neznano merilno mesto",
+      "invalid_input": "Neveljaven vnos",
+      "invalid_influx_auth": "Neveljaven InfluxDB žeton",
+      "cannot_connect_influx": "Povezava z InfluxDB ni mogoča",
+      "unknown_influx": "Nepričakovana napaka InfluxDB"
+    },
+    "create_entry": {
+      "influxdb_verified": "Povezava z InfluxDB preverjena. Najdenih {count} obstoječih podatkovnih točk."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Moj Elektro",
+        "menu_options": {
+          "edit_measurements": "Uredi usmerjanje meritev",
+          "backfill": "Zgodovinsko polnjenje od datuma",
+          "influxdb_config": "Uredi povezavo z InfluxDB"
+        }
+      },
+      "backfill": {
+        "title": "Zgodovinsko polnjenje",
+        "description": "Ponovno prenese vse usmerjene meritve za vsa merilna mesta od izbranega datuma do zdaj. Teče v ozadju; spremljajte dnevnik Home Assistanta za napredek.",
+        "data": {
+          "backfill_from": "Od"
+        }
+      },
+      "add_usage_point": {
+        "title": "Dodaj merilno mesto",
+        "data": {
+          "identifikator": "Identifikator"
+        }
+      },
+      "configure_measurements": {
+        "title": "Nastavi meritve",
+        "description": "Za {naziv} ({identifikator}) — izberite katero koli kombinacijo Statistike in InfluxDB.",
+        "data": {
+          "A_PLUS_15MIN": "Prejeta delovna energija, A+ (15 min, kWh)",
+          "A_MINUS_15MIN": "Oddana delovna energija, A- (15 min, kWh)",
+          "R_PLUS_15MIN": "Prejeta jalova energija, R+ (15 min, kVArh)",
+          "R_MINUS_15MIN": "Oddana jalova energija, R- (15 min, kVArh)",
+          "P_PLUS_15MIN": "Prejeta delovna moč, P+ (15 min, kW)",
+          "P_MINUS_15MIN": "Oddana delovna moč, P- (15 min, kW)",
+          "Q_PLUS_15MIN": "Prejeta jalova moč, Q+ (15 min, kVAr)",
+          "Q_MINUS_15MIN": "Oddana jalova moč, Q- (15 min, kVAr)",
+          "A_PLUS_T0_DAILY": "Stanje delovne energije, A+ T0 (kWh)",
+          "A_PLUS_T1_DAILY": "Stanje delovne energije, A+ T1 (kWh)",
+          "A_PLUS_T2_DAILY": "Stanje delovne energije, A+ T2 (kWh)",
+          "A_MINUS_T0_DAILY": "Stanje delovne energije, A- T0 (kWh)",
+          "A_MINUS_T1_DAILY": "Stanje delovne energije, A- T1 (kWh)",
+          "A_MINUS_T2_DAILY": "Stanje delovne energije, A- T2 (kWh)",
+          "R_PLUS_T0_DAILY": "Stanje jalove energije, R+ T0 (kVArh)",
+          "R_PLUS_T1_DAILY": "Stanje jalove energije, R+ T1 (kVArh)",
+          "R_PLUS_T2_DAILY": "Stanje jalove energije, R+ T2 (kVArh)",
+          "R_MINUS_T0_DAILY": "Stanje jalove energije, R- T0 (kVArh)",
+          "R_MINUS_T1_DAILY": "Stanje jalove energije, R- T1 (kVArh)",
+          "R_MINUS_T2_DAILY": "Stanje jalove energije, R- T2 (kVArh)"
+        }
+      },
+      "influxdb_config": {
+        "title": "Povezava z InfluxDB",
+        "data": {
+          "url": "URL",
+          "org": "Organizacija",
+          "bucket": "Bucket",
+          "token": "Žeton"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Neveljaven API žeton",
+      "cannot_connect": "Povezava z Moj Elektro ni mogoča",
+      "unknown": "Nepričakovana napaka",
+      "unknown_meter": "Neznano merilno mesto",
+      "invalid_input": "Neveljaven vnos",
+      "invalid_influx_auth": "Neveljaven InfluxDB žeton",
+      "cannot_connect_influx": "Povezava z InfluxDB ni mogoča",
+      "unknown_influx": "Nepričakovana napaka InfluxDB"
+    },
+    "create_entry": {
+      "influxdb_verified": "Povezava z InfluxDB preverjena. Najdenih {count} obstoječih podatkovnih točk."
+    }
+  },
+  "selector": {
+    "sink": {
+      "options": {
+        "statistics": "Statistika",
+        "influxdb": "InfluxDB"
+      }
+    }
+  }
+}

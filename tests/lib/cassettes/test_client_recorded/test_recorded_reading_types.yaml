@@ -1,0 +1,102 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Host:
+      - api.informatika.si
+      User-Agent:
+      - python-httpx/0.28.1
+      X-API-TOKEN:
+      - REDACTED
+    method: GET
+    uri: https://api.informatika.si/mojelektro/v1/reading-type
+  response:
+    body:
+      string: "[{\"naziv\":\"Prejeta 15 minutna delovna energija\",\"opis\":\"15 minutna
+        energija, A+, kWh\",\"oznaka\":\"A+\",\"perioda\":\"15 min\",\"readingType\":\"32.0.2.4.1.2.12.0.0.0.0.0.0.0.0.3.72.0\",\"readingTypeBrezObracuna\":\"0.0.2.4.1.2.12.0.0.0.0.0.0.0.0.3.72.0\",\"readingTypeObracun\":\"8.0.2.4.1.2.12.0.0.0.0.0.0.0.0.3.72.0\",\"tip\":\"delovna
+        prejem\",\"vrsta\":\"KOLICINA\"},{\"naziv\":\"Oddana 15 minutna delovna energija\",\"opis\":\"15
+        minutna energija, A-, kWh\",\"oznaka\":\"A-\",\"perioda\":\"15 min\",\"readingType\":\"32.0.2.4.19.2.12.0.0.0.0.0.0.0.0.3.72.0\",\"readingTypeBrezObracuna\":\"0.0.2.4.19.2.12.0.0.0.0.0.0.0.0.3.72.0\",\"readingTypeObracun\":\"8.0.2.4.19.2.12.0.0.0.0.0.0.0.0.3.72.0\",\"tip\":\"delovna
+        oddaja\",\"vrsta\":\"KOLICINA\"},{\"naziv\":\"Prejeta 15 minutna jalova energija\",\"opis\":\"15
+        minutna energija, R+, kVArh\",\"oznaka\":\"R+\",\"perioda\":\"15 min\",\"readingType\":\"32.0.2.4.1.2.12.0.0.0.0.0.0.0.0.3.73.0\",\"readingTypeBrezObracuna\":\"0.0.2.4.1.2.12.0.0.0.0.0.0.0.0.3.73.0\",\"readingTypeObracun\":\"8.0.2.4.1.2.12.0.0.0.0.0.0.0.0.3.73.0\",\"tip\":\"jalova
+        prejem\",\"vrsta\":\"KOLICINA\"},{\"naziv\":\"Oddana 15 minutna jalova energija\",\"opis\":\"15
+        minutna energija, R-, kVArh\",\"oznaka\":\"R-\",\"perioda\":\"15 min\",\"readingType\":\"32.0.2.4.19.2.12.0.0.0.0.0.0.0.0.3.73.0\",\"readingTypeBrezObracuna\":\"0.0.2.4.19.2.12.0.0.0.0.0.0.0.0.3.73.0\",\"readingTypeObracun\":\"8.0.2.4.19.2.12.0.0.0.0.0.0.0.0.3.73.0\",\"tip\":\"jalova
+        oddaja\",\"vrsta\":\"KOLICINA\"},{\"naziv\":\"Prejeta 15 minutna delovna mo\u010D\",\"opis\":\"15
+        minutna mo\u010D, A+, kW\",\"oznaka\":\"P+\",\"perioda\":\"15 min\",\"readingType\":\"32.0.2.4.1.2.37.0.0.0.0.0.0.0.0.3.38.0\",\"readingTypeBrezObracuna\":\"0.0.2.4.1.2.37.0.0.0.0.0.0.0.0.3.38.0\",\"readingTypeObracun\":\"8.0.2.4.1.2.37.0.0.0.0.0.0.0.0.3.38.0\",\"tip\":\"delovna
+        prejem\",\"vrsta\":\"KOLICINA\"},{\"naziv\":\"Oddana 15 minutna delovna mo\u010D\",\"opis\":\"15
+        minutna mo\u010D, A-, kW\",\"oznaka\":\"P-\",\"perioda\":\"15 min\",\"readingType\":\"32.0.2.4.19.2.37.0.0.0.0.0.0.0.0.3.38.0\",\"readingTypeBrezObracuna\":\"0.0.2.4.19.2.37.0.0.0.0.0.0.0.0.3.38.0\",\"readingTypeObracun\":\"8.0.2.4.19.2.37.0.0.0.0.0.0.0.0.3.38.0\",\"tip\":\"delovna
+        oddaja\",\"vrsta\":\"KOLICINA\"},{\"naziv\":\"Prejeta 15 minutna jalova mo\u010D\",\"opis\":\"15
+        minutna mo\u010D, R+, kVAr\",\"oznaka\":\"Q+\",\"perioda\":\"15 min\",\"readingType\":\"32.0.2.4.1.2.37.0.0.0.0.0.0.0.0.3.63.0\",\"readingTypeBrezObracuna\":\"0.0.2.4.1.2.37.0.0.0.0.0.0.0.0.3.63.0\",\"readingTypeObracun\":\"8.0.2.4.1.2.37.0.0.0.0.0.0.0.0.3.63.0\",\"tip\":\"jalova
+        prejem\",\"vrsta\":\"KOLICINA\"},{\"naziv\":\"Oddana 15 minutna jalova mo\u010D\",\"opis\":\"15
+        minutna mo\u010D, R-, kVAr\",\"oznaka\":\"Q-\",\"perioda\":\"15 min\",\"readingType\":\"32.0.2.4.19.2.37.0.0.0.0.0.0.0.0.3.63.0\",\"readingTypeBrezObracuna\":\"0.0.2.4.19.2.37.0.0.0.0.0.0.0.0.3.63.0\",\"readingTypeObracun\":\"8.0.2.4.19.2.37.0.0.0.0.0.0.0.0.3.63.0\",\"tip\":\"jalova
+        oddaja\",\"vrsta\":\"KOLICINA\"},{\"naziv\":\"Prejeta delovna energija ET\",\"opis\":\"24
+        urno stanje, A+, kWh, T0\",\"oznaka\":\"A+_T0\",\"perioda\":\"24 h\",\"readingType\":\"32.0.4.1.1.2.12.0.0.0.0.0.0.0.0.3.72.0\",\"readingTypeBrezObracuna\":\"0.0.4.1.1.2.12.0.0.0.0.0.0.0.0.3.72.0\",\"readingTypeObracun\":\"8.0.4.1.1.2.12.0.0.0.0.0.0.0.0.3.72.0\",\"tip\":\"delovna
+        prejem ET\",\"vrsta\":\"STANJE\"},{\"naziv\":\"Prejeta delovna energija VT\",\"opis\":\"24
+        urno stanje, A+, kWh, T1\",\"oznaka\":\"A+_T1\",\"perioda\":\"24 h\",\"readingType\":\"32.0.4.1.1.2.12.0.0.0.0.1.0.0.0.3.72.0\",\"readingTypeBrezObracuna\":\"0.0.4.1.1.2.12.0.0.0.0.1.0.0.0.3.72.0\",\"readingTypeObracun\":\"8.0.4.1.1.2.12.0.0.0.0.1.0.0.0.3.72.0\",\"tip\":\"delovna
+        prejem VT\",\"vrsta\":\"STANJE\"},{\"naziv\":\"Prejeta delovna energija MT\",\"opis\":\"24
+        urno stanje, A+, kWh, T2\",\"oznaka\":\"A+_T2\",\"perioda\":\"24 h\",\"readingType\":\"32.0.4.1.1.2.12.0.0.0.0.2.0.0.0.3.72.0\",\"readingTypeBrezObracuna\":\"0.0.4.1.1.2.12.0.0.0.0.2.0.0.0.3.72.0\",\"readingTypeObracun\":\"8.0.4.1.1.2.12.0.0.0.0.2.0.0.0.3.72.0\",\"tip\":\"delovna
+        prejem MT\",\"vrsta\":\"STANJE\"},{\"naziv\":\"Oddana delovna energija ET\",\"opis\":\"24
+        urno stanje, A-, kWh, T0\",\"oznaka\":\"A-_T0\",\"perioda\":\"24 h\",\"readingType\":\"32.0.4.1.19.2.12.0.0.0.0.0.0.0.0.3.72.0\",\"readingTypeBrezObracuna\":\"0.0.4.1.19.2.12.0.0.0.0.0.0.0.0.3.72.0\",\"readingTypeObracun\":\"8.0.4.1.19.2.12.0.0.0.0.0.0.0.0.3.72.0\",\"tip\":\"delovna
+        oddaja ET\",\"vrsta\":\"STANJE\"},{\"naziv\":\"Oddana delovna energija VT\",\"opis\":\"24
+        urno stanje, A-, kWh, T1\",\"oznaka\":\"A-_T1\",\"perioda\":\"24 h\",\"readingType\":\"32.0.4.1.19.2.12.0.0.0.0.1.0.0.0.3.72.0\",\"readingTypeBrezObracuna\":\"0.0.4.1.19.2.12.0.0.0.0.1.0.0.0.3.72.0\",\"readingTypeObracun\":\"8.0.4.1.19.2.12.0.0.0.0.1.0.0.0.3.72.0\",\"tip\":\"delovna
+        oddaja VT\",\"vrsta\":\"STANJE\"},{\"naziv\":\"Oddana delovna energija MT\",\"opis\":\"24
+        urno stanje, A-, kWh, T2\",\"oznaka\":\"A-_T2\",\"perioda\":\"24 h\",\"readingType\":\"32.0.4.1.19.2.12.0.0.0.0.2.0.0.0.3.72.0\",\"readingTypeBrezObracuna\":\"0.0.4.1.19.2.12.0.0.0.0.2.0.0.0.3.72.0\",\"readingTypeObracun\":\"8.0.4.1.19.2.12.0.0.0.0.2.0.0.0.3.72.0\",\"tip\":\"delovna
+        oddaja MT\",\"vrsta\":\"STANJE\"},{\"naziv\":\"Prejeta jalova energija ET\",\"opis\":\"24
+        urno stanje, R+, kVArh, T0\",\"oznaka\":\"R+_T0\",\"perioda\":\"24 h\",\"readingType\":\"32.0.4.1.1.2.12.0.0.0.0.0.0.0.0.3.73.0\",\"readingTypeBrezObracuna\":\"0.0.4.1.1.2.12.0.0.0.0.0.0.0.0.3.73.0\",\"readingTypeObracun\":\"8.0.4.1.1.2.12.0.0.0.0.0.0.0.0.3.73.0\",\"tip\":\"jalova
+        prejem ET\",\"vrsta\":\"STANJE\"},{\"naziv\":\"Prejeta jalova energija VT\",\"opis\":\"24
+        urno stanje, R+, kVArh, T1\",\"oznaka\":\"R+_T1\",\"perioda\":\"24 h\",\"readingType\":\"32.0.4.1.1.2.12.0.0.0.0.1.0.0.0.3.73.0\",\"readingTypeBrezObracuna\":\"0.0.4.1.1.2.12.0.0.0.0.1.0.0.0.3.73.0\",\"readingTypeObracun\":\"8.0.4.1.1.2.12.0.0.0.0.1.0.0.0.3.73.0\",\"tip\":\"jalova
+        prejem VT\",\"vrsta\":\"STANJE\"},{\"naziv\":\"Prejeta jalova energija MT\",\"opis\":\"24
+        urno stanje, R+, kVArh, T2\",\"oznaka\":\"R+_T2\",\"perioda\":\"24 h\",\"readingType\":\"32.0.4.1.1.2.12.0.0.0.0.2.0.0.0.3.73.0\",\"readingTypeBrezObracuna\":\"0.0.4.1.1.2.12.0.0.0.0.2.0.0.0.3.73.0\",\"readingTypeObracun\":\"8.0.4.1.1.2.12.0.0.0.0.2.0.0.0.3.73.0\",\"tip\":\"jalova
+        prejem MT\",\"vrsta\":\"STANJE\"},{\"naziv\":\"Oddana jalova energija ET\",\"opis\":\"24
+        urno stanje, R-, kVArh, T0\",\"oznaka\":\"R-_T0\",\"perioda\":\"24 h\",\"readingType\":\"32.0.4.1.19.2.12.0.0.0.0.0.0.0.0.3.73.0\",\"readingTypeBrezObracuna\":\"0.0.4.1.19.2.12.0.0.0.0.0.0.0.0.3.73.0\",\"readingTypeObracun\":\"8.0.4.1.19.2.12.0.0.0.0.0.0.0.0.3.73.0\",\"tip\":\"jalova
+        oddaja ET\",\"vrsta\":\"STANJE\"},{\"naziv\":\"Oddana jalova energija VT\",\"opis\":\"24
+        urno stanje, R-, kVArh, T1\",\"oznaka\":\"R-_T1\",\"perioda\":\"24 h\",\"readingType\":\"32.0.4.1.19.2.12.0.0.0.0.1.0.0.0.3.73.0\",\"readingTypeBrezObracuna\":\"0.0.4.1.19.2.12.0.0.0.0.1.0.0.0.3.73.0\",\"readingTypeObracun\":\"8.0.4.1.19.2.12.0.0.0.0.1.0.0.0.3.73.0\",\"tip\":\"jalova
+        oddaja VT\",\"vrsta\":\"STANJE\"},{\"naziv\":\"Oddana jalova energija MT\",\"opis\":\"24
+        urno stanje, R-, kVArh, T2\",\"oznaka\":\"R-_T2\",\"perioda\":\"24 h\",\"readingType\":\"32.0.4.1.19.2.12.0.0.0.0.2.0.0.0.3.73.0\",\"readingTypeBrezObracuna\":\"0.0.4.1.19.2.12.0.0.0.0.2.0.0.0.3.73.0\",\"readingTypeObracun\":\"8.0.4.1.19.2.12.0.0.0.0.2.0.0.0.3.73.0\",\"tip\":\"jalova
+        oddaja MT\",\"vrsta\":\"STANJE\"}]"
+    headers:
+      Access-Control-Allow-Headers:
+      - Authorization,Content-Type,uuid,Cache-Control,Pragma,Expires,X-Api-Token
+      Access-Control-Allow-Methods:
+      - PUT,POST,DELETE,GET,OPTIONS
+      Access-Control-Allow-Origin:
+      - '*'
+      Cache-Control:
+      - no-cache="set-cookie, set-cookie2"
+      Connection:
+      - keep-alive
+      Content-Language:
+      - en-US
+      Content-Length:
+      - '6761'
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 07 Jun 2026 18:56:53 GMT
+      Expires:
+      - Thu, 01 Dec 1994 16:00:00 GMT
+      RateLimit-Limit:
+      - '5'
+      RateLimit-Remaining:
+      - '4'
+      RateLimit-Reset:
+      - '1'
+      X-Kong-Proxy-Latency:
+      - '1'
+      X-Kong-Request-Id:
+      - 24d3e947612ec63632e78f542cc81127
+      X-Kong-Upstream-Latency:
+      - '10'
+      X-RateLimit-Limit-Second:
+      - '5'
+      X-RateLimit-Remaining-Second:
+      - '4'
+    status:
+      code: 200
+      message: OK
+version: 1

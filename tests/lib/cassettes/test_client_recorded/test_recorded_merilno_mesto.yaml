@@ -1,0 +1,70 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Host:
+      - api.informatika.si
+      User-Agent:
+      - python-httpx/0.28.1
+      X-API-TOKEN:
+      - REDACTED
+    method: GET
+    uri: https://api.informatika.si/mojelektro/v1/merilno-mesto/4-0000000
+  response:
+    body:
+      string: "{\"identifikator\":{\"enotniIdentifikatorMerilnegaMesta\":\"4-0000000\",\"gsrn\":\"100000000000000000\"},\"lastnik\":{\"davcnaSt\":
+        \"REDACTED\",\"naslov\": \"REDACTED\",\"naziv\": \"REDACTED\"},\"merilneTocke\":[{\"gsrn\":\"200000000000000000\",\"vrsta\":\"OMTO\"}],\"naslov\":
+        \"REDACTED\",\"naziv\": \"REDACTED\",\"pogodbeniPodatki\":{\"daljinskoCitanje\":true,\"idFrekvenceOdbiranja\":1,\"idVrsteOmejevalcaToka\":2,\"jakostOmejevalcaToka\":25,\"mesecObracuna\":4,\"nazivFrekvenceOdbiranja\":\"MESE\u010CNO\",\"nazivNacinaPrikljucitve\":\"-\",\"nazivNapetostnegaNivoja\":\"Nizka
+        napetost\",\"obstoj15MinutneMeritve\":true,\"oznakaNacinaPrikljucitve\":0,\"oznakaNapetostnegaNivoja\":\"NN\",\"prikljucnaMoc\":17,\"stevilkaSzP\":
+        0,\"steviloFaz\":3,\"vrstaOmejevalcaToka\":\"varovalka\",\"vrstaPrikljucka\":\"Trifazni
+        priklju\u010Dek\"},\"tehnicniPodatki\":{\"datumVeljavnostiZiga\":\"2027-12-31\",\"letoIzdelave\":2019,\"statisticnaPopulacija\":
+        \"REDACTED\",\"tipStevca\":\"ZMXi320CQU1L1D3\",\"tovarniskaStevilkaMkn\":
+        \"REDACTED\",\"velikostPopulacije\":15531},\"tockaPrikljucitve\":{\"nn\":
+        \"REDACTED\",\"rtp\": \"REDACTED\",\"sn\": \"REDACTED\",\"tp\": \"REDACTED\"}}"
+    headers:
+      Access-Control-Allow-Headers:
+      - Authorization,Content-Type,uuid,Cache-Control,Pragma,Expires,X-Api-Token
+      Access-Control-Allow-Methods:
+      - PUT,POST,DELETE,GET,OPTIONS
+      Access-Control-Allow-Origin:
+      - '*'
+      Cache-Control:
+      - no-cache="set-cookie, set-cookie2"
+      Connection:
+      - keep-alive
+      Content-Language:
+      - en-US
+      Content-Length:
+      - '1244'
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 07 Jun 2026 13:59:33 GMT
+      Expires:
+      - Thu, 01 Dec 1994 16:00:00 GMT
+      RateLimit-Limit:
+      - '5'
+      RateLimit-Remaining:
+      - '2'
+      RateLimit-Reset:
+      - '1'
+      X-Kong-Proxy-Latency:
+      - '1'
+      X-Kong-Request-Id:
+      - 20b4887bbd7d1f0399512e37b2877b64
+      X-Kong-Upstream-Latency:
+      - '51'
+      X-RateLimit-Limit-Second:
+      - '5'
+      X-RateLimit-Remaining-Second:
+      - '2'
+    status:
+      code: 200
+      message: OK
+version: 1

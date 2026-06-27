@@ -1,0 +1,150 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Moj Elektro",
+        "description": "Enter your Moj Elektro API token.",
+        "data": {
+          "api_token": "API token",
+          "server": "Server"
+        }
+      },
+      "add_usage_point": {
+        "title": "Add usage point",
+        "description": "Enter the identifikator (short form, e.g. 4-1234567) or the 18-digit GSRN of the meter.",
+        "data": {
+          "identifikator": "Identifikator"
+        }
+      },
+      "configure_measurements": {
+        "title": "Configure measurements",
+        "description": "For {naziv} ({identifikator}) — pick any combination of Statistics and InfluxDB per reading type. Leaving a row empty skips it.",
+        "data": {
+          "A_PLUS_15MIN": "Active energy received, A+ (15 min, kWh)",
+          "A_MINUS_15MIN": "Active energy delivered, A- (15 min, kWh)",
+          "R_PLUS_15MIN": "Reactive energy received, R+ (15 min, kVArh)",
+          "R_MINUS_15MIN": "Reactive energy delivered, R- (15 min, kVArh)",
+          "P_PLUS_15MIN": "Active power received, P+ (15 min, kW)",
+          "P_MINUS_15MIN": "Active power delivered, P- (15 min, kW)",
+          "Q_PLUS_15MIN": "Reactive power received, Q+ (15 min, kVAr)",
+          "Q_MINUS_15MIN": "Reactive power delivered, Q- (15 min, kVAr)",
+          "A_PLUS_T0_DAILY": "Active energy state, A+ T0 (daily, kWh)",
+          "A_PLUS_T1_DAILY": "Active energy state, A+ T1 (daily, kWh)",
+          "A_PLUS_T2_DAILY": "Active energy state, A+ T2 (daily, kWh)",
+          "A_MINUS_T0_DAILY": "Active energy state, A- T0 (daily, kWh)",
+          "A_MINUS_T1_DAILY": "Active energy state, A- T1 (daily, kWh)",
+          "A_MINUS_T2_DAILY": "Active energy state, A- T2 (daily, kWh)",
+          "R_PLUS_T0_DAILY": "Reactive energy state, R+ T0 (daily, kVArh)",
+          "R_PLUS_T1_DAILY": "Reactive energy state, R+ T1 (daily, kVArh)",
+          "R_PLUS_T2_DAILY": "Reactive energy state, R+ T2 (daily, kVArh)",
+          "R_MINUS_T0_DAILY": "Reactive energy state, R- T0 (daily, kVArh)",
+          "R_MINUS_T1_DAILY": "Reactive energy state, R- T1 (daily, kVArh)",
+          "R_MINUS_T2_DAILY": "Reactive energy state, R- T2 (daily, kVArh)"
+        }
+      },
+      "influxdb_config": {
+        "title": "InfluxDB connection",
+        "data": {
+          "url": "URL",
+          "org": "Organization",
+          "bucket": "Bucket",
+          "token": "Token"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Invalid API token",
+      "cannot_connect": "Cannot reach Moj Elektro",
+      "unknown": "Unexpected error",
+      "unknown_meter": "Unknown meter",
+      "invalid_input": "Invalid input",
+      "invalid_influx_auth": "Invalid InfluxDB token",
+      "cannot_connect_influx": "Cannot reach InfluxDB",
+      "unknown_influx": "Unexpected InfluxDB error"
+    },
+    "create_entry": {
+      "influxdb_verified": "InfluxDB connection verified. Found {count} existing data points."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Moj Elektro",
+        "menu_options": {
+          "edit_measurements": "Edit measurement routing",
+          "backfill": "Backfill from a date",
+          "influxdb_config": "Edit InfluxDB connection"
+        }
+      },
+      "backfill": {
+        "title": "Backfill from a date",
+        "description": "Re-fetches every routed measurement for every usage point from the chosen date up to now. Runs in the background; check the Home Assistant log for progress.",
+        "data": {
+          "backfill_from": "From"
+        }
+      },
+      "add_usage_point": {
+        "title": "Add usage point",
+        "data": {
+          "identifikator": "Identifikator"
+        }
+      },
+      "configure_measurements": {
+        "title": "Configure measurements",
+        "description": "For {naziv} ({identifikator}) — pick any combination of Statistics and InfluxDB per reading type.",
+        "data": {
+          "A_PLUS_15MIN": "Active energy received, A+ (15 min, kWh)",
+          "A_MINUS_15MIN": "Active energy delivered, A- (15 min, kWh)",
+          "R_PLUS_15MIN": "Reactive energy received, R+ (15 min, kVArh)",
+          "R_MINUS_15MIN": "Reactive energy delivered, R- (15 min, kVArh)",
+          "P_PLUS_15MIN": "Active power received, P+ (15 min, kW)",
+          "P_MINUS_15MIN": "Active power delivered, P- (15 min, kW)",
+          "Q_PLUS_15MIN": "Reactive power received, Q+ (15 min, kVAr)",
+          "Q_MINUS_15MIN": "Reactive power delivered, Q- (15 min, kVAr)",
+          "A_PLUS_T0_DAILY": "Active energy state, A+ T0 (daily, kWh)",
+          "A_PLUS_T1_DAILY": "Active energy state, A+ T1 (daily, kWh)",
+          "A_PLUS_T2_DAILY": "Active energy state, A+ T2 (daily, kWh)",
+          "A_MINUS_T0_DAILY": "Active energy state, A- T0 (daily, kWh)",
+          "A_MINUS_T1_DAILY": "Active energy state, A- T1 (daily, kWh)",
+          "A_MINUS_T2_DAILY": "Active energy state, A- T2 (daily, kWh)",
+          "R_PLUS_T0_DAILY": "Reactive energy state, R+ T0 (daily, kVArh)",
+          "R_PLUS_T1_DAILY": "Reactive energy state, R+ T1 (daily, kVArh)",
+          "R_PLUS_T2_DAILY": "Reactive energy state, R+ T2 (daily, kVArh)",
+          "R_MINUS_T0_DAILY": "Reactive energy state, R- T0 (daily, kVArh)",
+          "R_MINUS_T1_DAILY": "Reactive energy state, R- T1 (daily, kVArh)",
+          "R_MINUS_T2_DAILY": "Reactive energy state, R- T2 (daily, kVArh)"
+        }
+      },
+      "influxdb_config": {
+        "title": "InfluxDB connection",
+        "data": {
+          "url": "URL",
+          "org": "Organization",
+          "bucket": "Bucket",
+          "token": "Token"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Invalid API token",
+      "cannot_connect": "Cannot reach Moj Elektro",
+      "unknown": "Unexpected error",
+      "unknown_meter": "Unknown meter",
+      "invalid_input": "Invalid input",
+      "invalid_influx_auth": "Invalid InfluxDB token",
+      "cannot_connect_influx": "Cannot reach InfluxDB",
+      "unknown_influx": "Unexpected InfluxDB error"
+    },
+    "create_entry": {
+      "influxdb_verified": "InfluxDB connection verified. Found {count} existing data points."
+    }
+  },
+  "selector": {
+    "sink": {
+      "options": {
+        "statistics": "Statistics",
+        "influxdb": "InfluxDB"
+      }
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "domain": "mojelektro",
+  "name": "Moj Elektro",
+  "version": "0.0.0",
+  "config_flow": true,
+  "codeowners": ["@marzab"],
+  "documentation": "https://github.com/marzab/mojelektro",
+  "issue_tracker": "https://github.com/marzab/mojelektro/issues",
+  "requirements": [],
+  "iot_class": "cloud_polling",
+  "integration_type": "service",
+  "dependencies": ["recorder"]
+}

@@ -1,0 +1,5 @@
+# Everything in this directory is generated at runtime by Home Assistant.
+# Only configuration.yaml is committed.
+*
+!.gitignore
+!configuration.yaml

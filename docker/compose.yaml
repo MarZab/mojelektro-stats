@@ -1,0 +1,65 @@
+# Dev stack for the Moj Elektro integration.
+#
+#   make dev-up      # start HA + InfluxDB
+#   make dev-logs    # tail HA logs
+#   make dev-down    # stop
+#
+# HA at http://localhost:8123 (first run: create an owner account, then add the
+# Moj Elektro integration via Settings → Devices & Services → Add Integration).
+# The integration under custom_components/mojelektro is bind-mounted (lib
+# included), so edits show up in HA after a restart (Settings → System → Restart).
+#
+# InfluxDB v2 at http://localhost:8086 (admin / mojelektro-admin, org `home`,
+# bucket `elektro`). Token-with-write-access is printed in the influxdb
+# container log; pull it with `docker logs mojelektro-influxdb`. Wire it into
+# the integration when you reach the InfluxDB step in the ConfigFlow.
+
+name: mojelektro-dev
+
+services:
+  homeassistant:
+    container_name: mojelektro-ha
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.ha
+    restart: unless-stopped
+    privileged: true
+    environment:
+      - TZ=Europe/Ljubljana
+      # Defaults the InfluxDB step in the Moj Elektro ConfigFlow / OptionsFlow
+      # picks up so dev users don't have to re-type the connection. Empty
+      # token by default — set MOJELEKTRO_INFLUXDB_TOKEN locally (or in .env)
+      # if you want it pre-filled.
+      - MOJELEKTRO_INFLUXDB_URL=http://influxdb:8086
+      - MOJELEKTRO_INFLUXDB_ORG=home
+      - MOJELEKTRO_INFLUXDB_BUCKET=elektro
+      - MOJELEKTRO_INFLUXDB_TOKEN=dev-influxdb-token
+    volumes:
+      - ./ha-config:/config
+      # Hot-reload the integration source on HA restart — no rebuild needed.
+      - ../custom_components/mojelektro:/config/custom_components/mojelektro:ro
+    ports:
+      - "8123:8123"
+    depends_on:
+      - influxdb
+
+  influxdb:
+    image: influxdb:2-alpine
+    container_name: mojelektro-influxdb
+    restart: unless-stopped
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=mojelektro-admin
+      - DOCKER_INFLUXDB_INIT_ORG=home
+      - DOCKER_INFLUXDB_INIT_BUCKET=elektro
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=dev-influxdb-token
+    ports:
+      - "8086:8086"
+    volumes:
+      - influxdb-data:/var/lib/influxdb2
+      - influxdb-config:/etc/influxdb2
+
+volumes:
+  influxdb-data:
+  influxdb-config:

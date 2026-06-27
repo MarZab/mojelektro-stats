@@ -1,0 +1,69 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Host:
+      - api.informatika.si
+      User-Agent:
+      - python-httpx/0.28.1
+      X-API-TOKEN:
+      - REDACTED
+    method: GET
+    uri: https://api.informatika.si/mojelektro/v1/merilna-tocka/200000000000000000
+  response:
+    body:
+      string: "{\"dobavitelj\":{\"datumDo\":\"9999-12-31\",\"datumOd\":\"2020-12-04\",\"eic\":\"11XIGET--------D\",\"naziv\":
+        \"REDACTED\",\"oznaka\":10036},\"dogovorjeneMoci\":[{\"casovniBlok1\":\"4.6\",\"casovniBlok2\":\"4.7\",\"casovniBlok3\":\"4.8\",\"casovniBlok4\":\"4.8\",\"casovniBlok5\":\"4.8\",\"datumDo\":\"2024-12-31T00:00:00Z\",\"datumOd\":\"2024-01-01T00:00:00Z\",\"datumVnosa\":\"2023-05-26\",\"minimalnaMoc\":\"4.6\",\"nacinDolocitve\":\"DISTRIBUTER\",\"novUporabnik\":false,\"oznakaIzracuna\":\"M1\",\"prikljucnaMoc\":\"17.0\",\"veljavnost\":true},{\"casovniBlok1\":\"4.6\",\"casovniBlok2\":\"5.0\",\"casovniBlok3\":\"5.0\",\"casovniBlok4\":\"5.0\",\"casovniBlok5\":\"5.0\",\"datumDo\":\"2025-12-31T00:00:00Z\",\"datumOd\":\"2025-01-01T00:00:00Z\",\"datumVnosa\":\"2024-06-22\",\"minimalnaMoc\":\"4.6\",\"nacinDolocitve\":\"DISTRIBUTER\",\"novUporabnik\":false,\"oznakaIzracuna\":\"M1\",\"prikljucnaMoc\":\"17.0\",\"veljavnost\":true},{\"casovniBlok1\":\"4.6\",\"casovniBlok2\":\"4.8\",\"casovniBlok3\":\"4.8\",\"casovniBlok4\":\"4.8\",\"casovniBlok5\":\"4.8\",\"datumDo\":\"2026-12-31T00:00:00Z\",\"datumOd\":\"2026-01-01T00:00:00Z\",\"datumVnosa\":\"2025-06-19\",\"minimalnaMoc\":\"4.6\",\"nacinDolocitve\":\"DISTRIBUTER\",\"novUporabnik\":false,\"oznakaIzracuna\":\"M1\",\"prikljucnaMoc\":\"17.0\",\"veljavnost\":false},{\"casovniBlok1\":\"3.7\",\"casovniBlok2\":\"4.6\",\"casovniBlok3\":\"4.6\",\"casovniBlok4\":\"4.6\",\"casovniBlok5\":\"4.6\",\"datumDo\":\"2026-12-31T00:00:00Z\",\"datumOd\":\"2026-01-01T00:00:00Z\",\"datumVnosa\":\"2025-10-17\",\"minimalnaMoc\":\"3.4\",\"nacinDolocitve\":\"DISTRIBUTER\",\"novUporabnik\":false,\"oznakaIzracuna\":\"M1\",\"prikljucnaMoc\":\"17.0\",\"veljavnost\":true}],\"gsrn\":\"200000000000000000\",\"idVrstaOdjema\":2,\"letneObratovalneUre\":0,\"merilnaMesta\":[{\"identifikator\":{\"enotniIdentifikatorMerilnegaMesta\":\"4-0000000\",\"gsrn\":\"100000000000000000\"},\"merilneTocke\":[{\"gsrn\":\"200000000000000000\",\"vrsta\":\"OMTO\"}]}],\"nacinObracuna\":\"DEJANSKA_PORABA\",\"nacinOskrbe\":\"DOBAVITELJ\",\"naslovnik\":{\"davcnaSt\":
+        \"REDACTED\",\"naslov\": \"REDACTED\",\"naziv\": \"REDACTED\"},\"naziv\":
+        \"REDACTED\",\"nazivVrstaOdjema\":\"Gospodinjstvo\",\"obracunIzgub\":false,\"obracunskaMoc\":10,\"obracunskaVezalnaShema\":\"OS.1A.1
+        - Navadni odjem\",\"placnikAliProdajalec\":{\"davcnaSt\": \"REDACTED\",\"naslov\":
+        \"REDACTED\",\"naziv\": \"REDACTED\"},\"stPogodbeOUporabiSistema\": \"REDACTED\",\"steviloTarifMerjenja\":2,\"tehnicnaVezalnaShema\":\"PS.1A\",\"uporabniskaSkupina\":\"0
+        - Uporabniki sistema priklju\u010Deni na NN izvod nazivne napetosti 400/230
+        V\",\"vrsta\":\"OMTO\"}"
+    headers:
+      Access-Control-Allow-Headers:
+      - Authorization,Content-Type,uuid,Cache-Control,Pragma,Expires,X-Api-Token
+      Access-Control-Allow-Methods:
+      - PUT,POST,DELETE,GET,OPTIONS
+      Access-Control-Allow-Origin:
+      - '*'
+      Cache-Control:
+      - no-cache="set-cookie, set-cookie2"
+      Connection:
+      - keep-alive
+      Content-Language:
+      - en-US
+      Content-Length:
+      - '2414'
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 07 Jun 2026 13:59:33 GMT
+      Expires:
+      - Thu, 01 Dec 1994 16:00:00 GMT
+      RateLimit-Limit:
+      - '5'
+      RateLimit-Remaining:
+      - '4'
+      RateLimit-Reset:
+      - '1'
+      X-Kong-Proxy-Latency:
+      - '1'
+      X-Kong-Request-Id:
+      - 6ca1594dba4a6579430727214f95a400
+      X-Kong-Upstream-Latency:
+      - '72'
+      X-RateLimit-Limit-Second:
+      - '5'
+      X-RateLimit-Remaining-Second:
+      - '4'
+    status:
+      code: 200
+      message: OK
+version: 1

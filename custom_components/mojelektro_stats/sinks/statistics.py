@@ -15,7 +15,8 @@ cumulative meter total). Both need different handling:
   at 0 and HA reads the boundary as a negative-consumption meter reset.)
 - Energy daily (A_/R_ STANJE): each value is already the cumulative meter
   total; `sum = value` directly, no accumulation.
-- Power (P_/Q_): arithmetic mean across the 4 fifteen-minute samples.
+- Power (P_/Q_): instantaneous, not cumulative — report mean/min/max across
+  the 4 fifteen-minute samples instead of a running sum.
 """
 
 from __future__ import annotations
@@ -156,7 +157,11 @@ class StatisticsSink:
                 cumulative += sum(values)
                 datum["sum"] = round(cumulative, 4)
             else:
+                # Instantaneous power (P/Q): not cumulative, so report the
+                # hour's distribution — mean plus the min/max envelope.
                 datum["mean"] = round(sum(values) / len(values), 4)
+                datum["min"] = round(min(values), 4)
+                datum["max"] = round(max(values), 4)
             data.append(datum)
 
         async_add_external_statistics(self._hass, metadata, data)

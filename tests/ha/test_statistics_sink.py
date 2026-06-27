@@ -95,7 +95,9 @@ async def test_energy_aggregates_4_quarter_hours_into_hourly_sum(
 
 
 @pytest.mark.ha
-async def test_power_aggregates_to_hourly_mean(recorder_mock: object, hass: object) -> None:
+async def test_power_aggregates_to_hourly_mean_min_max(
+    recorder_mock: object, hass: object
+) -> None:
     sink = StatisticsSink(hass)  # type: ignore[arg-type]
     captured_data: list[list[dict]] = []
 
@@ -116,7 +118,10 @@ async def test_power_aggregates_to_hourly_mean(recorder_mock: object, hass: obje
 
     data = captured_data[0]
     assert len(data) == 1
+    # Power is instantaneous: report the hour's distribution, not a running sum.
     assert data[0]["mean"] == pytest.approx(2.5)
+    assert data[0]["min"] == pytest.approx(1.0)
+    assert data[0]["max"] == pytest.approx(4.0)
     assert "sum" not in data[0]
 
 

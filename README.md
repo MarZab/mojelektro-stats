@@ -29,6 +29,13 @@ Get an API token at [mojelektro.si](https://mojelektro.si) (Account → API).
 
 Manual install: copy `custom_components/mojelektro_stats/` into your HA `config/custom_components/` directory and restart. The integration bundles its own typed API client under `lib/` — nothing else to install.
 
+## Dashboard
+
+The integration writes its data as Home Assistant **long-term statistics** (statistic IDs prefixed `mojelektro_stats:`), so there are two ways to chart it:
+
+- **Energy Dashboard** — the energy reading types appear in **Settings → Dashboards → Energy** (they carry the right `unit_class`). Add the cumulative `A+`/`A-` registers there for grid consumption/return — including the per-tariff (VT/MT) splits.
+- **`statistics-graph` card** — for power and anything else, add a [Statistics graph card](https://www.home-assistant.io/dashboards/statistics-graph/) and pick the `mojelektro_stats:…` statistics. Use `change` for cumulative energy and `mean`/`min`/`max` for power.
+
 ## Repository layout
 
 | Path | Purpose |

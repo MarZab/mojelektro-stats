@@ -1,6 +1,7 @@
 """DataUpdateCoordinator for the Moj Elektro integration.
 
-Per-day poll. Per-usage-point window `[last_synced_end, cutoff)` where
+Polls once per day at 06:00 local time (the trigger is registered in
+`async_setup_entry`). Per-usage-point window `[last_synced_end, cutoff)` where
 `cutoff = now - 4h` (the API publishes prior-day data; recent intervals may
 still be unstable). Half-open at the upper end; first sync starts
 `backfill_days` before the cutoff.
@@ -24,8 +25,8 @@ from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
 
-from custom_components.mojelektro import _bootstrap  # noqa: F401
-from custom_components.mojelektro.const import (
+from custom_components.mojelektro_stats import _bootstrap  # noqa: F401
+from custom_components.mojelektro_stats.const import (
     CONF_IDENTIFIKATOR,
     CONF_ROUTING,
     DEFAULT_BACKFILL_DAYS,
@@ -33,8 +34,8 @@ from custom_components.mojelektro.const import (
     MAX_FETCH_WINDOW_DAYS,
     SYNC_CUTOFF_HOURS,
 )
-from custom_components.mojelektro.dispatcher import Dispatcher
-from mojelektro import (
+from custom_components.mojelektro_stats.dispatcher import Dispatcher
+from mojelektro_api import (
     BY_NAME,
     AuthError,
     InvalidRequestError,
@@ -44,7 +45,6 @@ from mojelektro import (
 )
 
 _LOGGER: Final = logging.getLogger(__name__)
-_UPDATE_INTERVAL: Final = timedelta(days=1)
 _PER_POINT_TIMEOUT_S: Final = 60
 
 
@@ -63,7 +63,9 @@ class MojElektroDataUpdateCoordinator(DataUpdateCoordinator[None]):
             hass,
             _LOGGER,
             name=DOMAIN,
-            update_interval=_UPDATE_INTERVAL,
+            # No relative interval: refreshes are driven by a fixed 06:00 local
+            # wall-clock trigger registered in async_setup_entry.
+            update_interval=None,
         )
         self.client = client
         self.usage_points = list(usage_points)

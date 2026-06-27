@@ -5,8 +5,8 @@ import respx
 import typer
 
 from cli._resolve import resolve_gsrn_mm, resolve_gsrn_mt
-from mojelektro import MojElektroClient, Server
-from mojelektro.errors import NotFoundError
+from mojelektro_api import MojElektroClient, Server
+from mojelektro_api.errors import NotFoundError
 
 _BASE = Server.TEST.base_url
 

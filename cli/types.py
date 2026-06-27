@@ -3,7 +3,7 @@ from __future__ import annotations
 import typer
 
 from cli._format import OutputFormat, dump
-from mojelektro.reading_types import KNOWN_READING_TYPES, ReadingTypeInfo
+from mojelektro_api.reading_types import KNOWN_READING_TYPES, ReadingTypeInfo
 
 
 def _row(rt: ReadingTypeInfo) -> dict[str, str]:

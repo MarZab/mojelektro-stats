@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import httpx
 
-from mojelektro.errors import (
+from mojelektro_api.errors import (
     AuthError,
     InvalidRequestError,
     MojElektroError,

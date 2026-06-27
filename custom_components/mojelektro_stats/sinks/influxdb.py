@@ -25,9 +25,9 @@ import httpx
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.util import dt as dt_util
 
-from custom_components.mojelektro import _bootstrap  # noqa: F401
-from custom_components.mojelektro._naming import unit
-from mojelektro import IntervalReading, ReadingTypeInfo
+from custom_components.mojelektro_stats import _bootstrap  # noqa: F401
+from custom_components.mojelektro_stats._naming import unit
+from mojelektro_api import IntervalReading, ReadingTypeInfo
 
 _LOGGER: Final = logging.getLogger(__name__)
 _MEASUREMENT: Final = "mojelektro"

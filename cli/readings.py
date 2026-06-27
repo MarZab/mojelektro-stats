@@ -17,8 +17,8 @@ from cli._format import (
 )
 from cli._pager import paginate
 from cli._resolve import resolve_gsrn_mm
-from mojelektro import MojElektroClient
-from mojelektro.reading_types import BY_NAME, BY_RAW_CODE, KNOWN_READING_TYPES
+from mojelektro_api import MojElektroClient
+from mojelektro_api.reading_types import BY_NAME, BY_RAW_CODE, KNOWN_READING_TYPES
 
 # Highlight only the marker (pointer arrow + checkbox dot), not the
 # focused row's text — questionary's default `highlighted` style colors

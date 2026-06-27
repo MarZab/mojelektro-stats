@@ -42,8 +42,8 @@ from homeassistant.helpers.selector import (
     SelectSelectorMode,
 )
 
-from custom_components.mojelektro import _bootstrap  # noqa: F401
-from custom_components.mojelektro.const import (
+from custom_components.mojelektro_stats import _bootstrap  # noqa: F401
+from custom_components.mojelektro_stats.const import (
     CONF_BACKFILL_FROM,
     CONF_IDENTIFIKATOR,
     CONF_INFLUXDB,
@@ -63,13 +63,13 @@ from custom_components.mojelektro.const import (
     SINK_INFLUXDB,
     SINK_OPTIONS,
 )
-from custom_components.mojelektro.sinks.influxdb import (
+from custom_components.mojelektro_stats.sinks.influxdb import (
     InfluxDBAuthError,
     InfluxDBConnectionError,
     InfluxDBError,
     probe_influxdb_connection,
 )
-from mojelektro import (
+from mojelektro_api import (
     KNOWN_READING_TYPES,
     AuthError,
     InvalidRequestError,

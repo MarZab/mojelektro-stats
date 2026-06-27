@@ -52,8 +52,8 @@ InfluxDB sink:
 
 ### Loggers
 
-- Lib: `logging.getLogger("mojelektro")`.
-- Integration: `logging.getLogger("custom_components.mojelektro")`.
+- Lib: `logging.getLogger("mojelektro_api")`.
+- Integration: `logging.getLogger("custom_components.mojelektro_stats")`.
 
 ### Levels
 

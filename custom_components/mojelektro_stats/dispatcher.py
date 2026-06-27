@@ -16,9 +16,9 @@ from collections.abc import Mapping
 from datetime import date
 from typing import Final
 
-from custom_components.mojelektro import _bootstrap  # noqa: F401
-from custom_components.mojelektro.sinks import Sink
-from mojelektro import BY_RAW_CODE, MeterReadings
+from custom_components.mojelektro_stats import _bootstrap  # noqa: F401
+from custom_components.mojelektro_stats.sinks import Sink
+from mojelektro_api import BY_RAW_CODE, MeterReadings
 
 _LOGGER: Final = logging.getLogger(__name__)
 

@@ -6,9 +6,9 @@ from typing import Any, Self
 
 import httpx
 
-from mojelektro._http import raise_for_status
-from mojelektro.errors import TransportError
-from mojelektro.models import MerilnaTocka, MerilnoMesto, MeterReadings, Server
+from mojelektro_api._http import raise_for_status
+from mojelektro_api.errors import TransportError
+from mojelektro_api.models import MerilnaTocka, MerilnoMesto, MeterReadings, Server
 
 _TRANSIENT = (
     httpx.ConnectError,

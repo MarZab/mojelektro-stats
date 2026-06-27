@@ -4,7 +4,7 @@ import pytest
 from homeassistant.core import HomeAssistant
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.mojelektro.const import (
+from custom_components.mojelektro_stats.const import (
     CONF_SERVER,
     CONF_TOKEN,
     CONF_USAGE_POINTS,

@@ -22,9 +22,3 @@ repos:
         language: system
         types: [python]
         pass_filenames: false
-      - id: codegen-fresh
-        name: codegen-fresh
-        entry: ./scripts/regen-api.sh --check
-        language: system
-        files: ^mojelektro-openapi\.yaml$
-        pass_filenames: false

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Final
 
-DOMAIN: Final = "mojelektro"
+DOMAIN: Final = "mojelektro_stats"
 # No HA entity platforms — data flows directly to long-term statistics and/or
 # InfluxDB. Sensor entities were dropped: their state-change history can't be
 # backdated, which made them misleading for delayed meter data.
@@ -41,4 +41,4 @@ MAX_FETCH_WINDOW_DAYS: Final = 35
 # (skip / sensor / sensor+backfill / influxdb) to a list of sink names
 # (statistics, influxdb).
 DATA_CONFIG_VERSION: Final = 2
-STATISTIC_ID_PREFIX: Final = "mojelektro"
+STATISTIC_ID_PREFIX: Final = "mojelektro_stats"

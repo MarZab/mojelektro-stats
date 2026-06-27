@@ -6,9 +6,9 @@ import httpx
 import pytest
 import respx
 
-from mojelektro.client import MojElektroClient
-from mojelektro.errors import AuthError, NotFoundError, TransportError
-from mojelektro.models import Server
+from mojelektro_api.client import MojElektroClient
+from mojelektro_api.errors import AuthError, NotFoundError, TransportError
+from mojelektro_api.models import Server
 
 
 @pytest.mark.asyncio

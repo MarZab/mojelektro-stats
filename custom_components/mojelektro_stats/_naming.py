@@ -16,8 +16,8 @@ from typing import Final
 
 from homeassistant.const import UnitOfEnergy, UnitOfPower
 
-from custom_components.mojelektro import _bootstrap  # noqa: F401
-from mojelektro import ReadingTypeInfo
+from custom_components.mojelektro_stats import _bootstrap  # noqa: F401
+from mojelektro_api import ReadingTypeInfo
 
 _UNIT_KVARH: Final = "kVArh"
 _UNIT_KVAR: Final = "kVAr"

@@ -6,7 +6,7 @@ Developer tooling for verifying the HACS integration and its vendored API client
 
 ```
 tests/
-├── lib/                       # mojelektro lib + CLI tests
+├── lib/                       # mojelektro_api lib + CLI tests
 │   ├── cassettes/             # VCR cassettes (committed, PII-scrubbed)
 │   │   └── README.md          # recording procedure
 │   └── conftest.py            # fixtures + scrubbing rules

@@ -7,7 +7,7 @@ from typer.testing import CliRunner
 from cli import app
 from cli._pager import _prompt_for
 from cli.readings import _echo_equivalent_command
-from mojelektro.reading_types import ReadingTypeCode
+from mojelektro_api.reading_types import ReadingTypeCode
 
 
 def test_prompt_at_end_of_data_advertises_next_interval() -> None:

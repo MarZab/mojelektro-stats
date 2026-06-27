@@ -5,7 +5,7 @@ import respx
 from typer.testing import CliRunner
 
 from cli import app
-from mojelektro import Server
+from mojelektro_api import Server
 
 
 def test_auth_error_exits_3() -> None:

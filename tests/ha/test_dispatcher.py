@@ -5,9 +5,9 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from custom_components.mojelektro.const import SINK_INFLUXDB, SINK_STATISTICS
-from custom_components.mojelektro.dispatcher import Dispatcher
-from mojelektro import KNOWN_READING_TYPES, MeterReadings
+from custom_components.mojelektro_stats.const import SINK_INFLUXDB, SINK_STATISTICS
+from custom_components.mojelektro_stats.dispatcher import Dispatcher
+from mojelektro_api import KNOWN_READING_TYPES, MeterReadings
 
 _RT_A = KNOWN_READING_TYPES[0]
 _RT_B = KNOWN_READING_TYPES[1]

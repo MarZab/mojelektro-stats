@@ -1,6 +1,6 @@
 # Documentation
 
-This repository ships a **HACS Home Assistant integration** (`custom_components/mojelektro/`). The docs below are for contributors and AI agents; end users install via HACS and configure through Home Assistant's UI.
+This repository ships a **HACS Home Assistant integration** (`custom_components/mojelektro_stats/`). The docs below are for contributors and AI agents; end users install via HACS and configure through Home Assistant's UI.
 
 ## Start here
 
@@ -15,7 +15,7 @@ This repository ships a **HACS Home Assistant integration** (`custom_components/
 | Doc | Read when editing |
 |------|-------------------|
 | [`ai-rules/home-assistant.md`](ai-rules/home-assistant.md) | ConfigFlow, coordinator, sinks, manifest |
-| [`ai-rules/library.md`](ai-rules/library.md) | Vendored `lib/mojelektro/` API client |
+| [`ai-rules/library.md`](ai-rules/library.md) | Vendored `lib/mojelektro_api/` API client |
 | [`ai-rules/errors-and-logging.md`](ai-rules/errors-and-logging.md) | Exceptions, log redaction |
 
 ## Developer tooling (secondary)
@@ -40,4 +40,4 @@ Task-specific rule picker: [`ai-rules/README.md`](ai-rules/README.md).
 
 ## Version
 
-Single source: [`custom_components/mojelektro/lib/mojelektro/__about__.py`](../custom_components/mojelektro/lib/mojelektro/__about__.py). Keep `manifest.json` `"version"` in sync.
+Single source: [`custom_components/mojelektro_stats/lib/mojelektro_api/__about__.py`](../custom_components/mojelektro_stats/lib/mojelektro_api/__about__.py). Keep `manifest.json` `"version"` in sync.

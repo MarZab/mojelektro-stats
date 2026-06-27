@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-from mojelektro.__about__ import __version__
-from mojelektro.client import MojElektroClient
-from mojelektro.errors import (
+from mojelektro_api.__about__ import __version__
+from mojelektro_api.client import MojElektroClient
+from mojelektro_api.errors import (
     AuthError,
     InvalidRequestError,
     MojElektroError,
     NotFoundError,
     TransportError,
 )
-from mojelektro.models import (
+from mojelektro_api.models import (
     IntervalBlock,
     IntervalReading,
     MerilnaTocka,
@@ -18,7 +18,7 @@ from mojelektro.models import (
     MeterReadings,
     Server,
 )
-from mojelektro.reading_types import (
+from mojelektro_api.reading_types import (
     BY_NAME,
     BY_OZNAKA,
     BY_RAW_CODE,

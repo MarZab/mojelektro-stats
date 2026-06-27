@@ -3,8 +3,8 @@ from __future__ import annotations
 from datetime import date
 from typing import Protocol
 
-from custom_components.mojelektro import _bootstrap  # noqa: F401
-from mojelektro import IntervalReading, ReadingTypeInfo
+from custom_components.mojelektro_stats import _bootstrap  # noqa: F401
+from mojelektro_api import IntervalReading, ReadingTypeInfo
 
 
 class Sink(Protocol):

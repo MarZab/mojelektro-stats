@@ -3,8 +3,8 @@ from __future__ import annotations
 import httpx
 import pytest
 
-from mojelektro._http import raise_for_status
-from mojelektro.errors import (
+from mojelektro_api._http import raise_for_status
+from mojelektro_api.errors import (
     AuthError,
     InvalidRequestError,
     MojElektroError,

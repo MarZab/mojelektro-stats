@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from mojelektro.models import (
+from mojelektro_api.models import (
     IntervalBlock,
     IntervalReading,
     MerilnaTocka,

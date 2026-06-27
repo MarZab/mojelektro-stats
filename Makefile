@@ -43,7 +43,7 @@ dev-restart: ## Restart HA (picks up custom_components edits without a rebuild)
 
 regen-reading-types: ## Regenerate reading_types.py from the catalog cassette
 	uv run python scripts/regen-reading-types.py
-	uv run ruff format custom_components/mojelektro/lib/mojelektro/reading_types.py
+	uv run ruff format custom_components/mojelektro_stats/lib/mojelektro_api/reading_types.py
 
 clean: ## Remove caches and build artifacts
 	rm -rf .pytest_cache .mypy_cache .ruff_cache dist build *.egg-info

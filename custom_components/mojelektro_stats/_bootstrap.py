@@ -1,8 +1,8 @@
-"""Ensure the vendored mojelektro lib is importable in Home Assistant.
+"""Ensure the vendored mojelektro_api lib is importable in Home Assistant.
 
 HA loads integration modules directly (e.g. config_flow) without always
 importing this package's __init__ first, so any module that imports
-``mojelektro`` must import this module before those imports.
+``mojelektro_api`` must import this module before those imports.
 """
 
 from __future__ import annotations

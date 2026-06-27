@@ -6,7 +6,7 @@ from typing import Any
 
 import yaml
 
-from mojelektro.reading_types import BY_RAW_CODE
+from mojelektro_api.reading_types import BY_RAW_CODE
 
 
 class OutputFormat(StrEnum):

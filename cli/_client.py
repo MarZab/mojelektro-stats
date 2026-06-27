@@ -6,7 +6,7 @@ import sys
 import questionary
 import typer
 
-from mojelektro import MojElektroClient, Server
+from mojelektro_api import MojElektroClient, Server
 
 _MISSING_TOKEN_MSG = "API token not provided. Use --token or set MOJELEKTRO_APIKEY."
 

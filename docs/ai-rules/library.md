@@ -1,6 +1,6 @@
-# Library (`mojelektro`) rules
+# Library (`mojelektro_api`) rules
 
-Vendored API client inside the HACS integration at `custom_components/mojelektro/lib/mojelektro/`. It is **not** a standalone PyPI package — it ships with the integration and is also imported by dev tooling (`cli/`, `tests/`).
+Vendored API client inside the HACS integration at `custom_components/mojelektro_stats/lib/mojelektro_api/`. It is **not** a standalone PyPI package — it ships with the integration and is also imported by dev tooling (`cli/`, `tests/`).
 
 The library is **pure typed API access to Moj Elektro**. Nothing else.
 
@@ -15,10 +15,10 @@ If you find yourself wanting any of the above in the lib, the logic belongs in t
 
 ## Public surface
 
-`custom_components/mojelektro/lib/mojelektro/__init__.py` is the contract. Keep `__all__` and this list in sync; touching it is a breaking change pre-1.0 (bump 0.x).
+`custom_components/mojelektro_stats/lib/mojelektro_api/__init__.py` is the contract. Keep `__all__` and this list in sync; touching it is a breaking change pre-1.0 (bump 0.x).
 
 ```python
-from mojelektro import (
+from mojelektro_api import (
     MojElektroClient,
     Server,
     # Response payloads (TypedDicts; runtime-equivalent to dict)
@@ -53,7 +53,7 @@ We deliberately do **not** expose `/reading-type` or `/reading-qualities` at run
 
 ## Models
 
-`mojelektro.models` exports `TypedDict`s. The client returns parsed JSON directly — no `.from_dict()`/`.to_dict()` round-trips, no Pydantic. Consumers treat values as plain dicts/lists; the TypedDicts are pure type-checker hints.
+`mojelektro_api.models` exports `TypedDict`s. The client returns parsed JSON directly — no `.from_dict()`/`.to_dict()` round-trips, no Pydantic. Consumers treat values as plain dicts/lists; the TypedDicts are pure type-checker hints.
 
 `MerilnaTocka` is intentionally `dict[str, Any]` — its full shape is wide and we don't currently consume any specific fields beyond dumping it.
 
@@ -61,7 +61,7 @@ When the API grows a new endpoint we care about, add it as a method on `MojElekt
 
 ## Reading-type catalog
 
-`custom_components/mojelektro/lib/mojelektro/reading_types.py` is **generated** by `scripts/regen-reading-types.py` from the committed reading-types VCR cassette. Never hand-edit. To refresh after upstream adds new types:
+`custom_components/mojelektro_stats/lib/mojelektro_api/reading_types.py` is **generated** by `scripts/regen-reading-types.py` from the committed reading-types VCR cassette. Never hand-edit. To refresh after upstream adds new types:
 
 1. Re-record `test_recorded_reading_types.yaml` (see [`tests/lib/cassettes/README.md`](../../tests/lib/cassettes/README.md)).
 2. `make regen-reading-types`.

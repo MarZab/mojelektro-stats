@@ -1,6 +1,6 @@
 # Development
 
-Contributor guide. The **shipped product** is `custom_components/mojelektro/` (HACS). Everything below is developer tooling used to build, test, and debug that integration.
+Contributor guide. The **shipped product** is `custom_components/mojelektro_stats/` (HACS). Everything below is developer tooling used to build, test, and debug that integration.
 
 End-user install instructions: [`README.md`](../README.md). Agent rules: [`AGENTS.md`](../AGENTS.md).
 
@@ -36,14 +36,14 @@ Fallbacks: `uv run pytest`, `uv run ruff check`, `uv run mypy`.
 ### Shipped (HACS)
 
 ```
-custom_components/mojelektro/
+custom_components/mojelektro_stats/
 ├── manifest.json          # HACS metadata; requirements: [] (self-contained)
 ├── _bootstrap.py          # adds lib/ to sys.path at runtime
 ├── config_flow.py         # ConfigFlow + OptionsFlow
 ├── coordinator.py         # polling + backfill
 ├── dispatcher.py          # per-reading-type routing to sinks
 ├── sinks/                 # Statistics + InfluxDB writers
-└── lib/mojelektro/        # vendored typed API client (no HA imports)
+└── lib/mojelektro_api/        # vendored typed API client (no HA imports)
 ```
 
 See [`ai-rules/home-assistant.md`](ai-rules/home-assistant.md) for integration patterns.
@@ -55,7 +55,7 @@ See [`ai-rules/home-assistant.md`](ai-rules/home-assistant.md) for integration p
 | `cli/` | Typer CLI — `uv run python -m cli` ([`ai-rules/cli.md`](ai-rules/cli.md)) |
 | `tests/lib/` | Vendored lib + CLI tests |
 | `tests/ha/` | Integration tests (pytest-homeassistant-custom-component) |
-| `scripts/` | `regen-reading-types.py`, `bump-version.sh` |
+| `scripts/` | `regen-reading-types.py`, `record-reading-types.py` |
 | `docker/` | Local HA + InfluxDB for manual integration testing |
 | `docs/` | Specs, ai-rules, this file |
 
@@ -77,7 +77,7 @@ make dev-logs    # tail HA logs
 make dev-restart # pick up custom_components edits
 ```
 
-The integration is bind-mounted from `custom_components/mojelektro/` (lib included).
+The integration is bind-mounted from `custom_components/mojelektro_stats/` (lib included).
 
 ## Test cassettes
 
@@ -85,8 +85,8 @@ CI replays committed VCR cassettes — no live API calls. Re-recording procedure
 
 ## Reading-type catalog
 
-`lib/mojelektro/reading_types.py` is generated. After re-recording the reading-types cassette: `make regen-reading-types`.
+`lib/mojelektro_api/reading_types.py` is generated. After re-recording the reading-types cassette: `make regen-reading-types`.
 
 ## Releases (HACS)
 
-Version in `lib/mojelektro/__about__.py` and `manifest.json` — bump with `scripts/bump-version.sh`. See [`ai-rules/git-and-release.md`](ai-rules/git-and-release.md).
+Version in `lib/mojelektro_api/__about__.py` and `manifest.json` — bump both by hand, in lockstep. See [`ai-rules/git-and-release.md`](ai-rules/git-and-release.md).

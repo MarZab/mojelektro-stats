@@ -28,7 +28,14 @@ CASSETTE = (
     / "test_client_recorded"
     / "test_recorded_reading_types.yaml"
 )
-TARGET = REPO_ROOT / "custom_components" / "mojelektro" / "lib" / "mojelektro" / "reading_types.py"
+TARGET = (
+    REPO_ROOT
+    / "custom_components"
+    / "mojelektro_stats"
+    / "lib"
+    / "mojelektro_api"
+    / "reading_types.py"
+)
 
 # Map raw catalog tokens → Python identifier fragments.
 _OZNAKA_REPLACEMENTS = (

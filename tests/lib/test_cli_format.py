@@ -12,7 +12,7 @@ from cli._format import (
     flatten_to_pairs,
     pivot_readings,
 )
-from mojelektro.reading_types import ReadingTypeCode
+from mojelektro_api.reading_types import ReadingTypeCode
 
 
 def _payload() -> list[dict[str, Any]]:

@@ -8,8 +8,8 @@ Read **one** rule file matching your task. Default to integration rules unless y
 
 | File | Paths |
 |------|-------|
-| [`home-assistant.md`](home-assistant.md) | `custom_components/mojelektro/` — ConfigFlow, coordinator, sinks, manifest |
-| [`library.md`](library.md) | `custom_components/mojelektro/lib/mojelektro/` — vendored API client |
+| [`home-assistant.md`](home-assistant.md) | `custom_components/mojelektro_stats/` — ConfigFlow, coordinator, sinks, manifest |
+| [`library.md`](library.md) | `custom_components/mojelektro_stats/lib/mojelektro_api/` — vendored API client |
 | [`errors-and-logging.md`](errors-and-logging.md) | Exception hierarchy, log redaction |
 | [`python.md`](python.md) | Typing, ruff, async (all Python) |
 | [`testing.md`](testing.md) | `tests/` — pytest, VCR cassettes |

@@ -16,7 +16,7 @@ from datetime import date
 import httpx
 import pytest
 
-from mojelektro import MojElektroClient, Server
+from mojelektro_api import MojElektroClient, Server
 
 
 @pytest.mark.vcr
@@ -25,7 +25,7 @@ async def test_recorded_reading_types(mojelektro_token: str) -> None:
     """Hits /reading-type via raw httpx so we can refresh the catalog cassette.
 
     The lib's runtime client no longer exposes this endpoint (the catalog is
-    hardcoded in `custom_components/mojelektro/lib/mojelektro/reading_types.py`).
+    hardcoded in `custom_components/mojelektro_stats/lib/mojelektro_api/reading_types.py`).
     `scripts/regen-reading-types.py` reads the cassette produced by this test;
     re-record (`--record-mode=once`) after the upstream catalog grows or the
     path-aware scrub changes, then run `make regen-reading-types`.

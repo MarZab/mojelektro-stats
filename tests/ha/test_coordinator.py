@@ -9,14 +9,14 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import UpdateFailed
 
-from custom_components.mojelektro.const import (
+from custom_components.mojelektro_stats.const import (
     CONF_IDENTIFIKATOR,
     CONF_ROUTING,
     SINK_STATISTICS,
 )
-from custom_components.mojelektro.coordinator import MojElektroDataUpdateCoordinator
-from custom_components.mojelektro.dispatcher import Dispatcher
-from mojelektro import KNOWN_READING_TYPES, AuthError, NotFoundError, TransportError
+from custom_components.mojelektro_stats.coordinator import MojElektroDataUpdateCoordinator
+from custom_components.mojelektro_stats.dispatcher import Dispatcher
+from mojelektro_api import KNOWN_READING_TYPES, AuthError, NotFoundError, TransportError
 
 _RT = KNOWN_READING_TYPES[0]
 _EMPTY_PAYLOAD = {"usagePoint": "GSRN1", "intervalBlocks": []}
@@ -166,7 +166,7 @@ async def test_chunk_failure_preserves_partial_progress(
     recorder_mock: object, hass: HomeAssistant
 ) -> None:
     """Second chunk fails → last_synced_end carries the first chunk's end forward."""
-    from mojelektro import TransportError as _TE
+    from mojelektro_api import TransportError as _TE
 
     client = AsyncMock()
     calls: list[date] = []

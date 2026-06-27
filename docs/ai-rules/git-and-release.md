@@ -1,6 +1,6 @@
 # Git and release rules
 
-This repo releases through **HACS**, not PyPI. Tags and GitHub Releases notify HACS users; `custom_components/mojelektro/` is the deliverable.
+This repo releases through **HACS**, not PyPI. Tags and GitHub Releases notify HACS users; `custom_components/mojelektro_stats/` is the deliverable.
 
 ## Branching
 
@@ -30,9 +30,9 @@ Scope is optional but useful: `feat(coordinator): ...`, `fix(cli): ...`, `chore(
 ## Versioning
 
 - SemVer.
-- Single source: `custom_components/mojelektro/lib/mojelektro/__about__.py` (`__version__ = "X.Y.Z"`).
+- Single source: `custom_components/mojelektro_stats/lib/mojelektro_api/__about__.py` (`__version__ = "X.Y.Z"`).
 - The integration's `manifest.json` `"version"` must always match the lib's `__about__.py`.
-- Bump with `scripts/bump-version.sh X.Y.Z` — never edit by hand. The script updates both files and writes a CHANGELOG entry.
+- Bump both files together by hand: `__about__.py` (`__version__`) and `manifest.json` (`"version"`). Keep them in lockstep.
 
 Bump rules pre-1.0:
 - `0.x.0` for breaking changes (lib public surface, integration config schema).
@@ -42,7 +42,7 @@ Post-1.0: standard SemVer.
 
 ## Release flow
 
-1. `scripts/bump-version.sh X.Y.Z` — commits the bump.
+1. Bump `__about__.py` + `manifest.json` to `X.Y.Z` and commit.
 2. Tag: `git tag vX.Y.Z && git push --tags`.
 3. CI does the rest:
    - Runs `hacs/action` to validate HACS structure.

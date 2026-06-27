@@ -15,8 +15,8 @@ import re
 
 import typer
 
-from mojelektro import MojElektroClient
-from mojelektro.models import MerilnoMesto
+from mojelektro_api import MojElektroClient
+from mojelektro_api.models import MerilnoMesto
 
 _GSRN_RE = re.compile(r"^\d{18}$")
 

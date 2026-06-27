@@ -6,7 +6,7 @@ import httpx
 import pytest
 import respx
 
-from custom_components.mojelektro.sinks.influxdb import (
+from custom_components.mojelektro_stats.sinks.influxdb import (
     InfluxDBAuthError,
     InfluxDBConnectionError,
     InfluxDBError,
@@ -14,7 +14,7 @@ from custom_components.mojelektro.sinks.influxdb import (
     _parse_flux_count_csv,
     probe_influxdb_connection,
 )
-from mojelektro import BY_NAME
+from mojelektro_api import BY_NAME
 
 _COUNT_CSV = """# datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,long
 ,result,table,_start,_stop,_value

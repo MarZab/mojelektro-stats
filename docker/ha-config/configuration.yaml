@@ -9,5 +9,5 @@ default_config:
 logger:
   default: warning
   logs:
-    custom_components.mojelektro: debug
-    mojelektro: debug
+    custom_components.mojelektro_stats: debug
+    mojelektro_api: debug

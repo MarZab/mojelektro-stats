@@ -1,6 +1,0 @@
-project_name_override: mojelektro_generated
-package_name_override: _generated
-use_path_prefixes_for_title_model_names: false
-field_constraints: true
-post_hooks:
-  - "ruff format ."

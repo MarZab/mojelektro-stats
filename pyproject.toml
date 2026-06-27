@@ -1,12 +1,12 @@
 # Moj Elektro — HACS Home Assistant integration
 #
-# The shipped product is custom_components/mojelektro/ (self-contained, no PyPI deps).
+# The shipped product is custom_components/mojelektro_stats/ (self-contained, no PyPI deps).
 # This file configures developer tooling only: lint, typecheck, tests, and the
 # optional repo-local CLI under cli/. Nothing here is published or installed into HA.
 
 [project]
-name = "mojelektro"
-version = "0.0.0"
+name = "mojelektro-stats"
+version = "1.0.0"
 description = "Home Assistant HACS integration for Moj Elektro electricity data"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -43,16 +43,16 @@ dev = [
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
-pythonpath = [".", "custom_components/mojelektro/lib"]
+pythonpath = [".", "custom_components/mojelektro_stats/lib"]
 markers = ["ha: Home Assistant integration tests"]
 
 [tool.coverage.run]
 source = [
-  "custom_components/mojelektro",
-  "custom_components/mojelektro/lib/mojelektro",
+  "custom_components/mojelektro_stats",
+  "custom_components/mojelektro_stats/lib/mojelektro_api",
   "cli",
 ]
-omit = ["custom_components/mojelektro/lib/mojelektro/_generated/*"]
+omit = ["custom_components/mojelektro_stats/lib/mojelektro_api/_generated/*"]
 
 [tool.coverage.report]
 show_missing = true
@@ -62,15 +62,15 @@ fail_under = 0
 python_version = "3.14"
 strict = true
 files = [
-  "custom_components/mojelektro",
+  "custom_components/mojelektro_stats",
   "cli",
 ]
 explicit_package_bases = true
 namespace_packages = true
-mypy_path = ["custom_components/mojelektro/lib", "."]
+mypy_path = ["custom_components/mojelektro_stats/lib", "."]
 
 [[tool.mypy.overrides]]
-module = ["custom_components.mojelektro.*"]
+module = ["custom_components.mojelektro_stats.*"]
 # - misc:        HA decorator typing; HA itself isn't fully strict-typed
 # - attr-defined: HA exports some documented helpers via re-export without listing
 #                 them in __all__ (e.g. recorder.util.get_instance).
@@ -78,9 +78,9 @@ disable_error_code = ["misc", "attr-defined"]
 
 [tool.pyright]
 include = [
-  "custom_components/mojelektro",
+  "custom_components/mojelektro_stats",
   "cli",
 ]
-extraPaths = ["custom_components/mojelektro/lib"]
+extraPaths = ["custom_components/mojelektro_stats/lib"]
 pythonVersion = "3.14"
 typeCheckingMode = "strict"

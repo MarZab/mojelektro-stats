@@ -6,7 +6,7 @@
 #
 # HA at http://localhost:8123 (first run: create an owner account, then add the
 # Moj Elektro integration via Settings → Devices & Services → Add Integration).
-# The integration under custom_components/mojelektro is bind-mounted (lib
+# The integration under custom_components/mojelektro_stats is bind-mounted (lib
 # included), so edits show up in HA after a restart (Settings → System → Restart).
 #
 # InfluxDB v2 at http://localhost:8086 (admin / mojelektro-admin, org `home`,
@@ -37,7 +37,7 @@ services:
     volumes:
       - ./ha-config:/config
       # Hot-reload the integration source on HA restart — no rebuild needed.
-      - ../custom_components/mojelektro:/config/custom_components/mojelektro:ro
+      - ../custom_components/mojelektro_stats:/config/custom_components/mojelektro_stats:ro
     ports:
       - "8123:8123"
     depends_on:

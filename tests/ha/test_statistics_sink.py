@@ -6,8 +6,8 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from custom_components.mojelektro.sinks.statistics import StatisticsSink
-from mojelektro import BY_NAME, KNOWN_READING_TYPES
+from custom_components.mojelektro_stats.sinks.statistics import StatisticsSink
+from mojelektro_api import BY_NAME, KNOWN_READING_TYPES
 
 # Mirrors homeassistant.components.recorder.statistics.VALID_STATISTIC_ID
 _VALID_STATISTIC_ID = re.compile(r"^(?!.+__)(?!_)[\da-z_]+(?<!_):(?!_)[\da-z_]+(?<!_)$")
@@ -30,7 +30,7 @@ async def test_statistic_id_matches_ha_regex(
         captured.append(metadata["statistic_id"])
 
     with patch(
-        "custom_components.mojelektro.sinks.statistics.async_add_external_statistics",
+        "custom_components.mojelektro_stats.sinks.statistics.async_add_external_statistics",
         side_effect=fake_import,
     ):
         await sink.write(
@@ -43,7 +43,7 @@ async def test_statistic_id_matches_ha_regex(
     assert _VALID_STATISTIC_ID.match(statistic_id), statistic_id
     # Domain half must equal the source (HA also asserts this).
     domain, _ = statistic_id.split(":", 1)
-    assert domain == "mojelektro"
+    assert domain == "mojelektro_stats"
 
 
 def _four_quarter_readings(hour: datetime, values: list[float]) -> list[dict[str, str]]:
@@ -75,7 +75,7 @@ async def test_energy_aggregates_4_quarter_hours_into_hourly_sum(
     info = BY_NAME["A_PLUS_15MIN"]
     with (
         patch(
-            "custom_components.mojelektro.sinks.statistics.async_add_external_statistics",
+            "custom_components.mojelektro_stats.sinks.statistics.async_add_external_statistics",
             side_effect=fake,
         ),
         patch.object(StatisticsSink, "_previous_sum_before", return_value=(0.0, None)),
@@ -107,7 +107,7 @@ async def test_power_aggregates_to_hourly_mean(recorder_mock: object, hass: obje
     info = BY_NAME["P_PLUS_15MIN"]
     with (
         patch(
-            "custom_components.mojelektro.sinks.statistics.async_add_external_statistics",
+            "custom_components.mojelektro_stats.sinks.statistics.async_add_external_statistics",
             side_effect=fake,
         ),
         patch.object(StatisticsSink, "_previous_sum_before", return_value=(0.0, None)),
@@ -139,7 +139,7 @@ async def test_energy_anchors_on_existing_sum_so_chunk_boundary_doesnt_dip(
 
     with (
         patch(
-            "custom_components.mojelektro.sinks.statistics.async_add_external_statistics",
+            "custom_components.mojelektro_stats.sinks.statistics.async_add_external_statistics",
             side_effect=fake,
         ),
         patch.object(StatisticsSink, "_previous_sum_before", return_value=(100.0, None)),
@@ -171,7 +171,7 @@ async def test_back_to_back_chunks_carry_cumulative_via_in_memory_cache(
     # chunk A's write hasn't flushed before chunk B asks for the baseline.
     with (
         patch(
-            "custom_components.mojelektro.sinks.statistics.async_add_external_statistics",
+            "custom_components.mojelektro_stats.sinks.statistics.async_add_external_statistics",
             side_effect=fake,
         ),
         patch.object(StatisticsSink, "_previous_sum_before", return_value=(0.0, None)),
@@ -208,7 +208,7 @@ async def test_stanje_uses_value_directly_without_accumulation(
     # we don't use it — assert that explicitly by giving it a poison value.
     with (
         patch(
-            "custom_components.mojelektro.sinks.statistics.async_add_external_statistics",
+            "custom_components.mojelektro_stats.sinks.statistics.async_add_external_statistics",
             side_effect=fake,
         ),
         patch.object(StatisticsSink, "_previous_sum_before", return_value=(9999.0, None)),
@@ -232,7 +232,7 @@ async def test_replace_window_deletes_existing_statistics_before_import(
 
     with (
         patch(
-            "custom_components.mojelektro.sinks.statistics.async_add_external_statistics",
+            "custom_components.mojelektro_stats.sinks.statistics.async_add_external_statistics",
         ),
         patch.object(StatisticsSink, "_delete_statistics_in_window", delete_mock),
         patch.object(StatisticsSink, "_previous_sum_before", return_value=(0.0, None)),
@@ -246,7 +246,7 @@ async def test_replace_window_deletes_existing_statistics_before_import(
 
     delete_mock.assert_awaited_once()
     args = delete_mock.await_args.args
-    assert args[0] == "mojelektro:41234567_a_plus_15"
+    assert args[0] == "mojelektro_stats:41234567_a_plus_15"
     assert args[1] == datetime(2026, 6, 1, 0, 0, tzinfo=UTC)
     assert args[2] == datetime(2026, 6, 2, 0, 0, tzinfo=UTC)
 
@@ -274,7 +274,7 @@ async def test_overlapping_chunk_boundary_does_not_double_count(
 
     with (
         patch(
-            "custom_components.mojelektro.sinks.statistics.async_add_external_statistics",
+            "custom_components.mojelektro_stats.sinks.statistics.async_add_external_statistics",
             side_effect=fake,
         ),
         patch.object(StatisticsSink, "_previous_sum_before", return_value=(0.0, None)),

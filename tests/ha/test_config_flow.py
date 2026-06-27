@@ -14,7 +14,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.mojelektro.const import (
+from custom_components.mojelektro_stats.const import (
     CONF_BACKFILL_FROM,
     CONF_IDENTIFIKATOR,
     CONF_INFLUXDB,
@@ -33,10 +33,10 @@ from custom_components.mojelektro.const import (
     SINK_INFLUXDB,
     SINK_STATISTICS,
 )
-from mojelektro import KNOWN_READING_TYPES, AuthError, NotFoundError, TransportError
+from mojelektro_api import KNOWN_READING_TYPES, AuthError, NotFoundError, TransportError
 
-_VALIDATE = "custom_components.mojelektro.config_flow._validate_meter"
-_VALIDATE_INFLUX = "custom_components.mojelektro.config_flow._validate_influxdb"
+_VALIDATE = "custom_components.mojelektro_stats.config_flow._validate_meter"
+_VALIDATE_INFLUX = "custom_components.mojelektro_stats.config_flow._validate_influxdb"
 _FAKE_PAYLOAD: dict[str, Any] = {
     "naziv": "Some Place 12, Ljubljana",
     "identifikator": {
@@ -178,7 +178,7 @@ async def test_influxdb_config_rejects_bad_connection(
     enable_custom_integrations: object,
     hass: HomeAssistant,
 ) -> None:
-    from custom_components.mojelektro.sinks.influxdb import InfluxDBAuthError
+    from custom_components.mojelektro_stats.sinks.influxdb import InfluxDBAuthError
 
     first = await hass.config_entries.flow.async_init(DOMAIN, context={"source": "user"})
     await hass.config_entries.flow.async_configure(
@@ -282,7 +282,7 @@ async def test_migrate_v1_routing_collapses_old_sink_names(
         },
     )
     entry.add_to_hass(hass)
-    from custom_components.mojelektro import async_migrate_entry
+    from custom_components.mojelektro_stats import async_migrate_entry
 
     assert await async_migrate_entry(hass, entry) is True
     assert entry.version == DATA_CONFIG_VERSION

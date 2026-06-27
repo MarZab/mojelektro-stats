@@ -7,9 +7,10 @@ from typing import Any
 import httpx
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.event import async_track_time_change
 
-from custom_components.mojelektro import _bootstrap  # noqa: F401
-from custom_components.mojelektro.const import (
+from custom_components.mojelektro_stats import _bootstrap  # noqa: F401
+from custom_components.mojelektro_stats.const import (
     CONF_INFLUXDB,
     CONF_INFLUXDB_BUCKET,
     CONF_INFLUXDB_ORG,
@@ -26,10 +27,10 @@ from custom_components.mojelektro.const import (
     SINK_INFLUXDB,
     SINK_STATISTICS,
 )
-from custom_components.mojelektro.coordinator import MojElektroDataUpdateCoordinator
-from custom_components.mojelektro.dispatcher import Dispatcher
-from custom_components.mojelektro.sinks import InfluxDBSink, Sink, StatisticsSink
-from mojelektro import MojElektroClient, Server
+from custom_components.mojelektro_stats.coordinator import MojElektroDataUpdateCoordinator
+from custom_components.mojelektro_stats.dispatcher import Dispatcher
+from custom_components.mojelektro_stats.sinks import InfluxDBSink, Sink, StatisticsSink
+from mojelektro_api import MojElektroClient, Server
 
 
 def _server_from_str(value: str) -> Server:
@@ -113,6 +114,20 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
 
     await coordinator.async_config_entry_first_refresh()
+
+    # Daily sync at 06:00 local time. The API publishes prior-day data, so a
+    # morning run picks up a complete previous day. async_track_time_change
+    # uses HA's configured timezone and handles DST.
+    entry.async_on_unload(
+        async_track_time_change(
+            hass,
+            lambda now: hass.async_create_task(coordinator.async_refresh()),
+            hour=6,
+            minute=0,
+            second=0,
+        )
+    )
+
     if PLATFORMS:
         await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True

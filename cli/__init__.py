@@ -10,7 +10,7 @@ from typer.core import TyperGroup
 
 import cli._path  # noqa: F401
 from cli._format import OutputFormat
-from mojelektro.errors import (
+from mojelektro_api.errors import (
     AuthError,
     InvalidRequestError,
     MojElektroError,

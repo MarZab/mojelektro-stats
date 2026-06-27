@@ -25,7 +25,6 @@ from collections import defaultdict
 from datetime import date, datetime, time
 from typing import Final
 
-from sqlalchemy import delete, select
 from homeassistant.components.recorder.db_schema import Statistics, StatisticsMeta
 from homeassistant.components.recorder.models import (
     StatisticData,
@@ -38,16 +37,17 @@ from homeassistant.components.recorder.statistics import (
 from homeassistant.components.recorder.util import get_instance, session_scope
 from homeassistant.core import HomeAssistant
 from homeassistant.util import dt as dt_util
+from sqlalchemy import delete, select
 
-from custom_components.mojelektro import _bootstrap  # noqa: F401
-from custom_components.mojelektro._naming import (
+from custom_components.mojelektro_stats import _bootstrap  # noqa: F401
+from custom_components.mojelektro_stats._naming import (
     slug_reading_type,
     slug_usage_point,
     unit,
     unit_class,
 )
-from custom_components.mojelektro.const import STATISTIC_ID_PREFIX
-from mojelektro import IntervalReading, ReadingTypeInfo
+from custom_components.mojelektro_stats.const import STATISTIC_ID_PREFIX
+from mojelektro_api import IntervalReading, ReadingTypeInfo
 
 _LOGGER: Final = logging.getLogger(__name__)
 _VRSTA_STATE: Final = "STANJE"

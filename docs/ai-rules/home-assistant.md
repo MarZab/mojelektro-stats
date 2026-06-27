@@ -1,17 +1,17 @@
 # Home Assistant integration rules
 
-Primary codebase: `custom_components/mojelektro/`. This is what HACS installs. The vendored API client lives in `lib/mojelektro/`; integration logic (ConfigFlow, coordinator, sinks) lives alongside it.
+Primary codebase: `custom_components/mojelektro_stats/`. This is what HACS installs. The vendored API client lives in `lib/mojelektro_api/`; integration logic (ConfigFlow, coordinator, sinks) lives alongside it.
 
 ## Manifest
 
-`custom_components/mojelektro/manifest.json` essentials:
+`custom_components/mojelektro_stats/manifest.json` essentials:
 
-- `domain`: `mojelektro` (matches the lib name; do not change).
+- `domain`: `mojelektro_stats` (must match the integration directory name; do not change).
 - `config_flow`: `true` — there is no YAML configuration path.
-- `requirements`: `[]` — the API client is vendored under `lib/mojelektro/`; no PyPI dependency.
+- `requirements`: `[]` — the API client is vendored under `lib/mojelektro_api/`; no PyPI dependency.
 - `iot_class`: `cloud_polling`.
 - `integration_type`: `service`.
-- `version`: bumped in lockstep with the lib by `scripts/bump-version.sh`.
+- `version`: bumped in lockstep with the lib's `__about__.py` (by hand).
 
 Don't add new `requirements` entries casually — every entry is installed into every user's HA. Prefer vendoring small pure-Python deps inside the integration if truly needed.
 
@@ -54,7 +54,7 @@ Pure routing. No I/O. Takes `(readings, per_measurement_config)`, calls the righ
 Each sink is a class implementing a common `async def write(...)` interface, owning its own batching:
 
 - `SensorSink` — no-op write; the coordinator's latest payload is the source for entity state. Sensor entities pull during `_handle_coordinator_update`.
-- `StatisticsSink` — batches by `(usage_point, reading_type_id)`, calls `homeassistant.components.recorder.statistics.async_import_statistics` once per batch. `statistic_id` shape: `mojelektro:<usage_point>_<reading_type_id>`.
+- `StatisticsSink` — batches by `(usage_point, reading_type_id)`, calls `homeassistant.components.recorder.statistics.async_import_statistics` once per batch. `statistic_id` shape: `mojelektro_stats:<usage_point>_<reading_type_id>`.
 - `InfluxDBSink` — one async httpx client per config entry, batched line-protocol POST to `/api/v2/write?org=...&bucket=...&precision=s`. Token from OptionsFlow.
 
 Sinks raise on hard failures. The dispatcher catches per-point and signals back to the coordinator.

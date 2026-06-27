@@ -241,7 +241,7 @@ def _delete_statistics_in_window(
 ) -> None:
     start_ts = window_start.timestamp()
     stop_ts = window_stop.timestamp()
-    with session_scope(session=instance.get_session()) as session:  # type: ignore[attr-defined]
+    with session_scope(session=instance.get_session()) as session:
         row = session.execute(
             select(StatisticsMeta.id).where(StatisticsMeta.statistic_id == statistic_id)
         ).one_or_none()
@@ -264,7 +264,7 @@ def _sum_before_first_hour(
 ) -> tuple[float, datetime | None]:
     """Return ``(sum, hour)`` for the latest statistics row before ``first_hour``."""
     first_ts = first_hour.timestamp()
-    with session_scope(session=instance.get_session()) as session:  # type: ignore[attr-defined]
+    with session_scope(session=instance.get_session()) as session:
         row = session.execute(
             select(StatisticsMeta.id).where(StatisticsMeta.statistic_id == statistic_id)
         ).one_or_none()

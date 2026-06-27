@@ -39,7 +39,7 @@ Translation happens at the response boundary inside the client. Nothing httpx-sp
 |----------------------|---------------------------------------------------|
 | `AuthError`          | `ConfigEntryAuthFailed` from coordinator; `errors={"base": "invalid_auth"}` in ConfigFlow |
 | `NotFoundError` (usage point) | Log WARNING, skip that point, do not raise |
-| `InvalidRequestError` | Log ERROR, surface in diagnostics; ConfigFlow shows `errors={"base": "invalid_input"}` |
+| `InvalidRequestError` | Log ERROR; ConfigFlow shows `errors={"base": "invalid_input"}` |
 | `TransportError`     | `UpdateFailed` from coordinator; `errors={"base": "cannot_connect"}` in ConfigFlow |
 | `MojElektroError` (other 5xx) | `UpdateFailed` |
 
@@ -64,7 +64,7 @@ InfluxDB sink:
 
 ### Hard rules
 
-- The API token must never appear in any log line, at any level. Tests verify this for the diagnostics dump.
+- The API token must never appear in any log line, at any level. Tests verify this.
 - The InfluxDB token must never appear in any log line.
 - Don't log full request/response bodies at INFO or above.
 - Don't log stack traces at INFO. `logger.exception(...)` is for ERROR-level failures only.

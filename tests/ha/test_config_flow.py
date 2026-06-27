@@ -1,6 +1,6 @@
 """ConfigFlow + OptionsFlow tests.
 
-v2 routing shape: each reading type stores a list of sink names (subset of
+Routing shape: each reading type stores a list of sink names (subset of
 {"statistics", "influxdb"}). Empty list -> nothing dispatched.
 """
 
@@ -27,7 +27,6 @@ from custom_components.mojelektro_stats.const import (
     CONF_SERVER,
     CONF_TOKEN,
     CONF_USAGE_POINTS,
-    DATA_CONFIG_VERSION,
     DOMAIN,
     SERVER_TEST,
     SINK_INFLUXDB,
@@ -140,7 +139,7 @@ async def test_options_flow_backfill_triggers_coordinator(
 ) -> None:
     entry = MockConfigEntry(
         domain=DOMAIN,
-        version=DATA_CONFIG_VERSION,
+        version=1,
         data={
             CONF_TOKEN: "tok",
             CONF_SERVER: SERVER_TEST,
@@ -214,7 +213,7 @@ async def test_options_influxdb_config_reports_point_count(
 ) -> None:
     entry = MockConfigEntry(
         domain=DOMAIN,
-        version=DATA_CONFIG_VERSION,
+        version=1,
         data={
             CONF_TOKEN: "tok",
             CONF_SERVER: SERVER_TEST,
@@ -252,42 +251,3 @@ async def test_options_influxdb_config_reports_point_count(
     assert result["description"] == "influxdb_verified"
     assert result["description_placeholders"] == {"count": "7"}
     assert entry.data[CONF_INFLUXDB][CONF_INFLUXDB_TOKEN] == "new"
-
-
-@pytest.mark.ha
-async def test_migrate_v1_routing_collapses_old_sink_names(
-    recorder_mock: object,
-    enable_custom_integrations: object,
-    hass: HomeAssistant,
-) -> None:
-    """v1 'sensor+backfill' -> v2 ['statistics']; 'influxdb' -> ['influxdb']; rest -> []."""
-    entry = MockConfigEntry(
-        domain=DOMAIN,
-        version=1,
-        data={
-            CONF_TOKEN: "t",
-            CONF_SERVER: SERVER_TEST,
-            CONF_USAGE_POINTS: [
-                {
-                    CONF_IDENTIFIKATOR: "GSRN1",
-                    CONF_NAZIV: "X",
-                    CONF_ROUTING: {
-                        KNOWN_READING_TYPES[0].name: "sensor+backfill",
-                        KNOWN_READING_TYPES[1].name: "influxdb",
-                        KNOWN_READING_TYPES[2].name: "sensor",
-                        KNOWN_READING_TYPES[3].name: "skip",
-                    },
-                }
-            ],
-        },
-    )
-    entry.add_to_hass(hass)
-    from custom_components.mojelektro_stats import async_migrate_entry
-
-    assert await async_migrate_entry(hass, entry) is True
-    assert entry.version == DATA_CONFIG_VERSION
-    routing = entry.data[CONF_USAGE_POINTS][0][CONF_ROUTING]
-    assert routing[KNOWN_READING_TYPES[0].name] == [SINK_STATISTICS]
-    assert routing[KNOWN_READING_TYPES[1].name] == [SINK_INFLUXDB]
-    assert routing[KNOWN_READING_TYPES[2].name] == []
-    assert routing[KNOWN_READING_TYPES[3].name] == []

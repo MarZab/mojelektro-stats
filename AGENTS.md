@@ -60,7 +60,7 @@ make cli ARGS="types"      # run repo-local CLI
 ## Hard rules
 
 1. **The vendored lib never imports `homeassistant`** or any HA-specific module.
-2. **Never log the API token.** Tests verify redaction in diagnostics dumps.
+2. **Never log the API token** at any level. Tests verify it never appears in log output.
 3. **No retries inside the lib.** The HA coordinator and dev CLI handle retry policy.
 4. **All new code is typed.** `mypy --strict` and `pyright` must pass.
 5. **All new code has tests.** Lib → `tests/lib/`; integration → `tests/ha/`.
@@ -74,5 +74,4 @@ make cli ARGS="types"      # run repo-local CLI
 - Change the lib's public surface (`lib/mojelektro_api/__init__.py` exports).
 - Re-introduce sync entry points to the lib.
 - Add HA concepts to the lib (sinks, entities, statistics).
-- Change the per-measurement routing schema without `async_migrate_entry`.
 - Treat this repo as a PyPI/library product — it ships through HACS only.

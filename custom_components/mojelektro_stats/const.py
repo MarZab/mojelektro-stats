@@ -25,7 +25,7 @@ CONF_INFLUXDB_TOKEN: Final = "token"
 SERVER_PROD: Final = "prod"
 SERVER_TEST: Final = "test"
 
-# Routing values are now sets of sink names. Each reading type independently
+# Routing values are lists of sink names. Each reading type independently
 # chooses any combination of:
 SINK_STATISTICS: Final = "statistics"
 SINK_INFLUXDB: Final = "influxdb"
@@ -36,9 +36,4 @@ SYNC_CUTOFF_HOURS: Final = 4
 # The Moj Elektro API caps a single /meter-readings request at a 35-day
 # window. The coordinator chunks larger windows into successive requests.
 MAX_FETCH_WINDOW_DAYS: Final = 35
-# Bump on every breaking change to the entry data shape; bumps require an
-# `async_migrate_entry` step. v2 switched routing values from a single string
-# (skip / sensor / sensor+backfill / influxdb) to a list of sink names
-# (statistics, influxdb).
-DATA_CONFIG_VERSION: Final = 2
 STATISTIC_ID_PREFIX: Final = "mojelektro_stats"

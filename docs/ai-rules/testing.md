@@ -43,9 +43,7 @@ Patterns:
 - **OptionsFlow** — add/remove/change measurement routing.
 - **Coordinator** — mock `MojElektroClient`; assert window math, per-point isolation, `last_synced_end` advancement.
 - **Dispatcher** — pure unit; feed `(readings, config)`, assert sinks called with expected payloads.
-- **Sinks** — `StatisticsSink` via recorder harness (idempotence on double import); `InfluxDBSink` via `respx`; `SensorSink` via `_handle_coordinator_update` cycle.
-- **Migration** — one test per `async_migrate_entry` step.
-- **Diagnostics** — assert token redaction.
+- **Sinks** — `StatisticsSink` via recorder harness (idempotence on double import); `InfluxDBSink` via `respx`.
 
 ## Coverage
 

@@ -4,7 +4,7 @@ Takes the API's `MeterReadings` response for one usage point plus the user's
 per-measurement routing, and fans each interval block out to every sink the
 user enabled for that reading type. No I/O of its own — sinks own persistence.
 
-Routing shape (entry data, post-v2): {reading_type_name: [sink_name, ...]}.
+Routing shape (entry data): {reading_type_name: [sink_name, ...]}.
 Empty list -> nothing to write. Unknown reading-type codes are dropped (the
 catalog is hardcoded; an unknown code means the catalog is stale).
 """

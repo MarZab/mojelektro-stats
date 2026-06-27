@@ -56,7 +56,6 @@ from custom_components.mojelektro_stats.const import (
     CONF_SERVER,
     CONF_TOKEN,
     CONF_USAGE_POINTS,
-    DATA_CONFIG_VERSION,
     DOMAIN,
     SERVER_PROD,
     SERVER_TEST,
@@ -294,7 +293,7 @@ def _create_entry_result(
 
 
 class MojElektroConfigFlow(_FlowStepsMixin, config_entries.ConfigFlow, domain=DOMAIN):
-    VERSION = DATA_CONFIG_VERSION
+    VERSION = 1
 
     def __init__(self) -> None:
         self._data = {}
@@ -356,7 +355,7 @@ class MojElektroOptionsFlow(_FlowStepsMixin, config_entries.OptionsFlow):
         self._influxdb_point_count = None
 
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
-        # No usage point yet (legacy data or interrupted setup) — re-add one.
+        # No usage point yet (interrupted setup) — re-add one.
         if not self._data.get(CONF_USAGE_POINTS):
             return await self.async_step_add_usage_point()
         # Each entry has exactly one merilno mesto; "edit" goes straight to it.
@@ -399,8 +398,7 @@ class MojElektroOptionsFlow(_FlowStepsMixin, config_entries.OptionsFlow):
         return self._finish()
 
     def _finish(self) -> ConfigFlowResult:
-        # Keep the entry title in sync — naziv shouldn't change via edit_measurements
-        # but legacy entries created before this fix carry the hardcoded "Moj Elektro".
+        # Keep the entry title in sync with the usage point's naziv.
         self.hass.config_entries.async_update_entry(
             self.entry, data=self._data, title=_entry_title(self._data)
         )

@@ -12,9 +12,9 @@ Home Assistant integration for [Moj Elektro](https://mojelektro.si) electricity 
 
 <table>
   <tr>
-    <td> <img src="docs/images/graphana.png" ></td>
-    <td> <img src="docs/images/measurements.png" ></td>
-    <td> <img src="docs/images/settings.png" ></td>
+    <td> <img src="/docs/images/graphana.png" ></td>
+    <td> <img src="/docs/images/measurements.png" ></td>
+    <td> <img src="/docs/images/settings.png" ></td>
   </tr>
 </table>
 

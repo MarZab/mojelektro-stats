@@ -9,6 +9,7 @@ import httpx
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.event import async_track_time_change
+from homeassistant.util import dt as dt_util
 
 from custom_components.mojelektro_stats import _bootstrap  # noqa: F401
 from custom_components.mojelektro_stats.const import (
@@ -18,8 +19,12 @@ from custom_components.mojelektro_stats.const import (
     CONF_INFLUXDB_TOKEN,
     CONF_INFLUXDB_URL,
     CONF_SERVER,
+    CONF_SYNC_ENABLED,
+    CONF_SYNC_TIME,
     CONF_TOKEN,
     CONF_USAGE_POINTS,
+    DEFAULT_SYNC_ENABLED,
+    DEFAULT_SYNC_TIME,
     DOMAIN,
     PLATFORMS,
     SERVER_TEST,
@@ -78,16 +83,29 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     await coordinator.async_config_entry_first_refresh()
 
-    # Daily sync at 06:00 local time. The API publishes prior-day data, so a
-    # morning run picks up a complete previous day. async_track_time_change
-    # uses HA's configured timezone and handles DST.
-    @callback
-    def _daily_refresh(now: datetime) -> None:
-        hass.async_create_task(coordinator.async_refresh())
+    # Daily sync at the configured local time (default 06:00), unless turned
+    # off. The API publishes prior-day data, so a morning run picks up a
+    # complete previous day. async_track_time_change uses HA's timezone and
+    # handles DST.
+    if entry.data.get(CONF_SYNC_ENABLED, DEFAULT_SYNC_ENABLED):
+        sync_time = dt_util.parse_time(
+            entry.data.get(CONF_SYNC_TIME, DEFAULT_SYNC_TIME)
+        ) or dt_util.parse_time(DEFAULT_SYNC_TIME)
+        assert sync_time is not None  # DEFAULT_SYNC_TIME always parses
 
-    entry.async_on_unload(
-        async_track_time_change(hass, _daily_refresh, hour=6, minute=0, second=0)
-    )
+        @callback
+        def _daily_refresh(now: datetime) -> None:
+            hass.async_create_task(coordinator.async_refresh())
+
+        entry.async_on_unload(
+            async_track_time_change(
+                hass,
+                _daily_refresh,
+                hour=sync_time.hour,
+                minute=sync_time.minute,
+                second=sync_time.second,
+            )
+        )
 
     if PLATFORMS:
         await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)

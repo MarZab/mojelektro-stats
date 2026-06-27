@@ -21,6 +21,7 @@ async def test_setup_and_unload(
 ) -> None:
     entry = MockConfigEntry(
         domain=DOMAIN,
+        version=2,
         data={
             CONF_TOKEN: "tok",
             CONF_SERVER: SERVER_TEST,

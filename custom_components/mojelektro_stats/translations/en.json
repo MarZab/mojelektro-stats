@@ -73,7 +73,8 @@
         "menu_options": {
           "edit_measurements": "Edit measurement routing",
           "backfill": "Backfill from a date",
-          "influxdb_config": "Edit InfluxDB connection"
+          "influxdb_config": "Edit InfluxDB connection",
+          "sync_schedule": "Daily sync schedule"
         }
       },
       "backfill": {
@@ -122,6 +123,14 @@
           "org": "Organization",
           "bucket": "Bucket",
           "token": "Token"
+        }
+      },
+      "sync_schedule": {
+        "title": "Daily sync schedule",
+        "description": "When enabled, readings are fetched once a day at this local time.",
+        "data": {
+          "sync_enabled": "Enable daily sync",
+          "sync_time": "Sync time"
         }
       }
     },

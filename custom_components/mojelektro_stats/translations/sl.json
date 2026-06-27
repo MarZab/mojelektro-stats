@@ -73,7 +73,8 @@
         "menu_options": {
           "edit_measurements": "Uredi usmerjanje meritev",
           "backfill": "Zgodovinsko polnjenje od datuma",
-          "influxdb_config": "Uredi povezavo z InfluxDB"
+          "influxdb_config": "Uredi povezavo z InfluxDB",
+          "sync_schedule": "Urnik dnevne sinhronizacije"
         }
       },
       "backfill": {
@@ -122,6 +123,14 @@
           "org": "Organizacija",
           "bucket": "Bucket",
           "token": "Žeton"
+        }
+      },
+      "sync_schedule": {
+        "title": "Urnik dnevne sinhronizacije",
+        "description": "Ko je omogočeno, se meritve prenesejo enkrat dnevno ob tem lokalnem času.",
+        "data": {
+          "sync_enabled": "Omogoči dnevno sinhronizacijo",
+          "sync_time": "Čas sinhronizacije"
         }
       }
     },

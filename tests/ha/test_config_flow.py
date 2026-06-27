@@ -25,6 +25,8 @@ from custom_components.mojelektro_stats.const import (
     CONF_NAZIV,
     CONF_ROUTING,
     CONF_SERVER,
+    CONF_SYNC_ENABLED,
+    CONF_SYNC_TIME,
     CONF_TOKEN,
     CONF_USAGE_POINTS,
     DOMAIN,
@@ -251,3 +253,41 @@ async def test_options_influxdb_config_reports_point_count(
     assert result["description"] == "influxdb_verified"
     assert result["description_placeholders"] == {"count": "7"}
     assert entry.data[CONF_INFLUXDB][CONF_INFLUXDB_TOKEN] == "new"
+
+
+@pytest.mark.ha
+async def test_options_sync_schedule_persists_toggle_and_time(
+    recorder_mock: object,
+    enable_custom_integrations: object,
+    hass: HomeAssistant,
+) -> None:
+    """The dedicated sync-schedule menu step writes the toggle + time to the entry."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        version=2,
+        data={
+            CONF_TOKEN: "tok",
+            CONF_SERVER: SERVER_TEST,
+            CONF_USAGE_POINTS: [
+                {
+                    CONF_IDENTIFIKATOR: "GSRN1",
+                    CONF_NAZIV: "X",
+                    CONF_ROUTING: {KNOWN_READING_TYPES[0].name: [SINK_STATISTICS]},
+                }
+            ],
+        },
+    )
+    entry.add_to_hass(hass)
+
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    assert result["type"] == FlowResultType.MENU
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {"next_step_id": "sync_schedule"}
+    )
+    assert result["step_id"] == "sync_schedule"
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {CONF_SYNC_ENABLED: False, CONF_SYNC_TIME: "09:30:00"}
+    )
+    assert result["type"] == FlowResultType.CREATE_ENTRY
+    assert entry.data[CONF_SYNC_ENABLED] is False
+    assert entry.data[CONF_SYNC_TIME] == "09:30:00"

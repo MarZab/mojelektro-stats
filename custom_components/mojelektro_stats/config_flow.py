@@ -15,8 +15,9 @@ ConfigFlow:
 4. `influxdb_config` — only if at least one reading type opts into InfluxDB.
 
 OptionsFlow:
-- Menu: edit the usage point's measurement routing, kick off a backfill,
-  reconfigure InfluxDB (when applicable), save.
+- Menu: edit the usage point's measurement routing, adjust the daily sync
+  schedule (on/off + time), kick off a backfill, reconfigure InfluxDB
+  (when applicable), save.
 - Backfill runs `coordinator.async_backfill_from(date)` in a background task
   so the form returns immediately; results show up in the logs.
 """
@@ -35,11 +36,13 @@ from homeassistant import config_entries
 from homeassistant.config_entries import ConfigFlowResult
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.selector import (
+    BooleanSelector,
     DateSelector,
     SelectOptionDict,
     SelectSelector,
     SelectSelectorConfig,
     SelectSelectorMode,
+    TimeSelector,
 )
 
 from custom_components.mojelektro_stats import _bootstrap  # noqa: F401
@@ -54,8 +57,12 @@ from custom_components.mojelektro_stats.const import (
     CONF_NAZIV,
     CONF_ROUTING,
     CONF_SERVER,
+    CONF_SYNC_ENABLED,
+    CONF_SYNC_TIME,
     CONF_TOKEN,
     CONF_USAGE_POINTS,
+    DEFAULT_SYNC_ENABLED,
+    DEFAULT_SYNC_TIME,
     DOMAIN,
     SERVER_PROD,
     SERVER_TEST,
@@ -95,6 +102,8 @@ _SINK_SELECTOR = SelectSelector(
     )
 )
 _DATE_SELECTOR = DateSelector()
+_TIME_SELECTOR = TimeSelector()
+_BOOL_SELECTOR = BooleanSelector()
 
 
 # Environment-variable overrides for the InfluxDB defaults. Set on the HA
@@ -293,7 +302,9 @@ def _create_entry_result(
 
 
 class MojElektroConfigFlow(_FlowStepsMixin, config_entries.ConfigFlow, domain=DOMAIN):
-    VERSION = 1
+    # v2: per-reading-type routing is a list of sink names ({rt: [sink, ...]}).
+    # Entries on disk already carry version 2; keep this in sync with them.
+    VERSION = 2
 
     def __init__(self) -> None:
         self._data = {}
@@ -359,10 +370,34 @@ class MojElektroOptionsFlow(_FlowStepsMixin, config_entries.OptionsFlow):
         if not self._data.get(CONF_USAGE_POINTS):
             return await self.async_step_add_usage_point()
         # Each entry has exactly one merilno mesto; "edit" goes straight to it.
-        options = ["edit_measurements", "backfill"]
+        options = ["edit_measurements", "sync_schedule", "backfill"]
         if _routing_uses_influxdb(self._data[CONF_USAGE_POINTS]):
             options.append("influxdb_config")
         return self.async_show_menu(step_id="init", menu_options=options)
+
+    async def async_step_sync_schedule(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Turn the daily sync on/off and pick the local time it runs at."""
+        if user_input is not None:
+            self._data[CONF_SYNC_ENABLED] = bool(user_input[CONF_SYNC_ENABLED])
+            self._data[CONF_SYNC_TIME] = user_input[CONF_SYNC_TIME]
+            return self._finish()
+        return self.async_show_form(
+            step_id="sync_schedule",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(
+                        CONF_SYNC_ENABLED,
+                        default=self._data.get(CONF_SYNC_ENABLED, DEFAULT_SYNC_ENABLED),
+                    ): _BOOL_SELECTOR,
+                    vol.Required(
+                        CONF_SYNC_TIME,
+                        default=self._data.get(CONF_SYNC_TIME, DEFAULT_SYNC_TIME),
+                    ): _TIME_SELECTOR,
+                }
+            ),
+        )
 
     async def async_step_edit_measurements(
         self, user_input: dict[str, Any] | None = None

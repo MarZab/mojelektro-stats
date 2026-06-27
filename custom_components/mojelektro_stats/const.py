@@ -16,6 +16,8 @@ CONF_IDENTIFIKATOR: Final = "identifikator"
 CONF_NAZIV: Final = "naziv"
 CONF_BACKFILL_DAYS: Final = "backfill_days"
 CONF_BACKFILL_FROM: Final = "backfill_from"
+CONF_SYNC_ENABLED: Final = "sync_enabled"
+CONF_SYNC_TIME: Final = "sync_time"
 CONF_INFLUXDB: Final = "influxdb"
 CONF_INFLUXDB_URL: Final = "url"
 CONF_INFLUXDB_ORG: Final = "org"
@@ -32,6 +34,10 @@ SINK_INFLUXDB: Final = "influxdb"
 SINK_OPTIONS: Final = (SINK_STATISTICS, SINK_INFLUXDB)
 
 DEFAULT_BACKFILL_DAYS: Final = 7
+# Daily sync runs by default at this local time ("HH:MM:SS"); configurable
+# per entry, and can be turned off entirely.
+DEFAULT_SYNC_ENABLED: Final = True
+DEFAULT_SYNC_TIME: Final = "06:00:00"
 SYNC_CUTOFF_HOURS: Final = 4
 # The Moj Elektro API caps a single /meter-readings request at a 35-day
 # window. The coordinator chunks larger windows into successive requests.

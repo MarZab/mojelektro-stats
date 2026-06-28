@@ -42,6 +42,9 @@ from homeassistant.helpers.selector import (
     SelectSelector,
     SelectSelectorConfig,
     SelectSelectorMode,
+    TextSelector,
+    TextSelectorConfig,
+    TextSelectorType,
     TimeSelector,
 )
 
@@ -50,10 +53,15 @@ from custom_components.mojelektro_stats.const import (
     CONF_BACKFILL_FROM,
     CONF_IDENTIFIKATOR,
     CONF_INFLUXDB,
+    CONF_INFLUXDB_API_VERSION,
     CONF_INFLUXDB_BUCKET,
+    CONF_INFLUXDB_DATABASE,
     CONF_INFLUXDB_ORG,
+    CONF_INFLUXDB_PASSWORD,
+    CONF_INFLUXDB_RETENTION,
     CONF_INFLUXDB_TOKEN,
     CONF_INFLUXDB_URL,
+    CONF_INFLUXDB_USERNAME,
     CONF_NAZIV,
     CONF_ROUTING,
     CONF_SERVER,
@@ -61,9 +69,12 @@ from custom_components.mojelektro_stats.const import (
     CONF_SYNC_TIME,
     CONF_TOKEN,
     CONF_USAGE_POINTS,
+    DEFAULT_INFLUXDB_RETENTION,
     DEFAULT_SYNC_ENABLED,
     DEFAULT_SYNC_TIME,
     DOMAIN,
+    INFLUXDB_V1,
+    INFLUXDB_V2,
     SERVER_PROD,
     SERVER_TEST,
     SINK_INFLUXDB,
@@ -72,6 +83,7 @@ from custom_components.mojelektro_stats.const import (
 from custom_components.mojelektro_stats.sinks.influxdb import (
     InfluxDBAuthError,
     InfluxDBConnectionError,
+    InfluxDBDatabaseNotFound,
     InfluxDBError,
     probe_influxdb_connection,
 )
@@ -104,6 +116,29 @@ _SINK_SELECTOR = SelectSelector(
 _DATE_SELECTOR = DateSelector()
 _TIME_SELECTOR = TimeSelector()
 _BOOL_SELECTOR = BooleanSelector()
+_PASSWORD_SELECTOR = TextSelector(TextSelectorConfig(type=TextSelectorType.PASSWORD))
+
+# Radio toggle on the first InfluxDB step. v2 is the default (cloud / OSS 2.x);
+# v1 targets the Home Assistant InfluxDB 1.8 add-on via its v2-compat API.
+# Labels are set explicitly (no translation_key) so the radios always render
+# readable text even if HA's translation cache is stale — and InfluxDB version
+# names aren't worth translating anyway.
+_INFLUXDB_VERSION_SELECTOR = SelectSelector(
+    SelectSelectorConfig(
+        mode=SelectSelectorMode.LIST,
+        options=[
+            SelectOptionDict(value=INFLUXDB_V2, label="InfluxDB 2.x / Cloud"),
+            SelectOptionDict(
+                value=INFLUXDB_V1, label="InfluxDB 1.x (Home Assistant add-on)"
+            ),
+        ],
+    )
+)
+
+# Defaults for the v1 form, matching a stock Home Assistant InfluxDB add-on.
+_V1_DEFAULT_URL: Final = "http://a0d7b954-influxdb:8086"
+_V1_DEFAULT_DATABASE: Final = "homeassistant"
+_V1_DEFAULT_USERNAME: Final = "homeassistant"
 
 
 # Environment-variable overrides for the InfluxDB defaults. Set on the HA
@@ -118,6 +153,39 @@ _ENV_INFLUXDB: Final = {
 
 def _server_from_str(value: str) -> Server:
     return Server.TEST if value == SERVER_TEST else Server.PRODUCTION
+
+
+def _compose_v1(user_input: Mapping[str, Any]) -> dict[str, str]:
+    """Fold native v1 form fields into the v2 shape the sink consumes.
+
+    token -> "username:password", bucket -> "database/retention_policy".
+    org is a placeholder ("-") since InfluxDB 1.x ignores it.
+    """
+    database = str(user_input[CONF_INFLUXDB_DATABASE]).strip()
+    retention = str(user_input.get(CONF_INFLUXDB_RETENTION) or DEFAULT_INFLUXDB_RETENTION).strip()
+    username = str(user_input.get(CONF_INFLUXDB_USERNAME) or "")
+    password = str(user_input.get(CONF_INFLUXDB_PASSWORD) or "")
+    bucket = f"{database}/{retention}" if retention else database
+    return {
+        CONF_INFLUXDB_API_VERSION: INFLUXDB_V1,
+        CONF_INFLUXDB_URL: str(user_input[CONF_INFLUXDB_URL]),
+        CONF_INFLUXDB_ORG: "-",
+        CONF_INFLUXDB_BUCKET: bucket,
+        CONF_INFLUXDB_TOKEN: f"{username}:{password}",
+    }
+
+
+def _decompose_v1(existing: Mapping[str, Any]) -> dict[str, str]:
+    """Split a stored v2-shaped v1 config back into native fields for pre-fill."""
+    database, _, retention = str(existing.get(CONF_INFLUXDB_BUCKET, "")).partition("/")
+    username, _, password = str(existing.get(CONF_INFLUXDB_TOKEN, "")).partition(":")
+    return {
+        CONF_INFLUXDB_URL: str(existing.get(CONF_INFLUXDB_URL, "")),
+        CONF_INFLUXDB_DATABASE: database,
+        CONF_INFLUXDB_RETENTION: retention,
+        CONF_INFLUXDB_USERNAME: username,
+        CONF_INFLUXDB_PASSWORD: password,
+    }
 
 
 async def _validate_meter(
@@ -226,9 +294,31 @@ class _FlowStepsMixin:
             },
         )
 
+    async def async_step_influxdb_version(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Pick the InfluxDB API version, then branch to the matching form."""
+        if user_input is not None:
+            if user_input[CONF_INFLUXDB_API_VERSION] == INFLUXDB_V1:
+                return await self.async_step_influxdb_config_v1()
+            return await self.async_step_influxdb_config()
+        existing = cast("Mapping[str, Any]", self._data.get(CONF_INFLUXDB) or {})
+        default = existing.get(CONF_INFLUXDB_API_VERSION, INFLUXDB_V2)
+        return self.async_show_form(
+            step_id="influxdb_version",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(
+                        CONF_INFLUXDB_API_VERSION, default=default
+                    ): _INFLUXDB_VERSION_SELECTOR,
+                }
+            ),
+        )
+
     async def async_step_influxdb_config(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
+        """InfluxDB 2.x form: org / bucket / token."""
         existing = cast("Mapping[str, Any]", self._data.get(CONF_INFLUXDB) or {})
         if not existing:
             # Look for defaults in this priority order:
@@ -251,7 +341,10 @@ class _FlowStepsMixin:
             except InfluxDBError:
                 errors["base"] = "unknown_influx"
             else:
-                self._data[CONF_INFLUXDB] = user_input
+                self._data[CONF_INFLUXDB] = {
+                    CONF_INFLUXDB_API_VERSION: INFLUXDB_V2,
+                    **user_input,
+                }
                 self._influxdb_point_count = count
                 return self._finish()
         return self.async_show_form(
@@ -274,6 +367,66 @@ class _FlowStepsMixin:
                         CONF_INFLUXDB_TOKEN,
                         default=existing.get(CONF_INFLUXDB_TOKEN, ""),
                     ): str,
+                }
+            ),
+            errors=errors,
+        )
+
+    async def async_step_influxdb_config_v1(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """InfluxDB 1.x form (HA InfluxDB add-on): database / user / password.
+
+        Fields are composed into the v2 shape the sink speaks, so nothing
+        downstream needs to know which version the user picked.
+        """
+        existing = cast("Mapping[str, Any]", self._data.get(CONF_INFLUXDB) or {})
+        prefill = (
+            _decompose_v1(existing)
+            if existing.get(CONF_INFLUXDB_API_VERSION) == INFLUXDB_V1
+            else {}
+        )
+        errors: dict[str, str] = {}
+        if user_input is not None:
+            composed = _compose_v1(user_input)
+            try:
+                count = await _validate_influxdb(self.hass, composed)
+            except InfluxDBAuthError:
+                errors["base"] = "invalid_influx_auth"
+            except InfluxDBConnectionError:
+                errors["base"] = "cannot_connect_influx"
+            except InfluxDBDatabaseNotFound:
+                errors[CONF_INFLUXDB_DATABASE] = "unknown_database"
+            except InfluxDBError:
+                errors["base"] = "unknown_influx"
+            else:
+                self._data[CONF_INFLUXDB] = composed
+                self._influxdb_point_count = count
+                return self._finish()
+        return self.async_show_form(
+            step_id="influxdb_config_v1",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(
+                        CONF_INFLUXDB_URL,
+                        default=prefill.get(CONF_INFLUXDB_URL) or _V1_DEFAULT_URL,
+                    ): str,
+                    vol.Required(
+                        CONF_INFLUXDB_DATABASE,
+                        default=prefill.get(CONF_INFLUXDB_DATABASE) or _V1_DEFAULT_DATABASE,
+                    ): str,
+                    vol.Optional(
+                        CONF_INFLUXDB_RETENTION,
+                        default=prefill.get(CONF_INFLUXDB_RETENTION) or DEFAULT_INFLUXDB_RETENTION,
+                    ): str,
+                    vol.Required(
+                        CONF_INFLUXDB_USERNAME,
+                        default=prefill.get(CONF_INFLUXDB_USERNAME) or _V1_DEFAULT_USERNAME,
+                    ): str,
+                    vol.Required(
+                        CONF_INFLUXDB_PASSWORD,
+                        default=prefill.get(CONF_INFLUXDB_PASSWORD) or "",
+                    ): _PASSWORD_SELECTOR,
                 }
             ),
             errors=errors,
@@ -340,7 +493,7 @@ class MojElektroConfigFlow(_FlowStepsMixin, config_entries.ConfigFlow, domain=DO
             _routing_uses_influxdb(self._data[CONF_USAGE_POINTS])
             and CONF_INFLUXDB not in self._data
         ):
-            return await self.async_step_influxdb_config()
+            return await self.async_step_influxdb_version()
         return self._finish()
 
     def _finish(self) -> ConfigFlowResult:
@@ -372,7 +525,7 @@ class MojElektroOptionsFlow(_FlowStepsMixin, config_entries.OptionsFlow):
         # Each entry has exactly one merilno mesto; "edit" goes straight to it.
         options = ["edit_measurements", "sync_schedule", "backfill"]
         if _routing_uses_influxdb(self._data[CONF_USAGE_POINTS]):
-            options.append("influxdb_config")
+            options.append("influxdb_version")
         return self.async_show_menu(step_id="init", menu_options=options)
 
     async def async_step_sync_schedule(
@@ -511,9 +664,10 @@ async def _validate_influxdb(
         return await probe_influxdb_connection(
             http,
             url=config[CONF_INFLUXDB_URL],
-            org=config[CONF_INFLUXDB_ORG],
+            org=config.get(CONF_INFLUXDB_ORG, ""),
             bucket=config[CONF_INFLUXDB_BUCKET],
             token=config[CONF_INFLUXDB_TOKEN],
+            api_version=config.get(CONF_INFLUXDB_API_VERSION, INFLUXDB_V2),
         )
     finally:
         await http.aclose()

@@ -27,6 +27,7 @@ from homeassistant.util import dt as dt_util
 
 from custom_components.mojelektro_stats import _bootstrap  # noqa: F401
 from custom_components.mojelektro_stats._naming import unit
+from custom_components.mojelektro_stats.const import INFLUXDB_V1, INFLUXDB_V2
 from mojelektro_api import IntervalReading, ReadingTypeInfo
 
 _LOGGER: Final = logging.getLogger(__name__)
@@ -45,6 +46,14 @@ class InfluxDBError(Exception):
     """InfluxDB returned an unexpected error response."""
 
 
+class InfluxDBDatabaseNotFound(InfluxDBError):
+    """The configured database (v1) does not exist on the server."""
+
+    def __init__(self, database: str) -> None:
+        super().__init__(f"database {database!r} not found")
+        self.database = database
+
+
 async def probe_influxdb_connection(
     http: httpx.AsyncClient,
     *,
@@ -52,9 +61,17 @@ async def probe_influxdb_connection(
     org: str,
     bucket: str,
     token: str,
+    api_version: str = INFLUXDB_V2,
 ) -> int:
-    """Verify org/bucket access and return existing ``mojelektro`` point count."""
+    """Verify org/bucket access and return existing ``mojelektro`` point count.
+
+    For v2 a Flux query against a non-existent bucket already errors out, so the
+    bucket is validated implicitly. v1 (InfluxQL) silently returns an empty
+    result for an unknown database, so we check existence explicitly first.
+    """
     base = url.rstrip("/")
+    if api_version == INFLUXDB_V1:
+        await _ensure_v1_database_exists(http, base=base, bucket=bucket, token=token)
     flux = (
         f'from(bucket: "{_escape_flux_string(bucket)}")\n'
         f'  |> range(start: 1970-01-01T00:00:00Z)\n'
@@ -81,6 +98,49 @@ async def probe_influxdb_connection(
     if response.status_code >= 400:
         raise InfluxDBError(f"HTTP {response.status_code}: {response.text[:200]}") from None
     return _parse_flux_count_csv(response.text)
+
+
+async def _ensure_v1_database_exists(
+    http: httpx.AsyncClient, *, base: str, bucket: str, token: str
+) -> None:
+    """Confirm the v1 database (the part of the bucket before "/") exists.
+
+    Uses the InfluxQL endpoint (`SHOW DATABASES`) with Basic auth derived from
+    the composed ``username:password`` token — the auth scheme InfluxDB 1.x
+    accepts on the v1 `/query` endpoint regardless of v2-compat config.
+    """
+    database = bucket.split("/", 1)[0]
+    username, _, password = token.partition(":")
+    try:
+        response = await http.get(
+            f"{base}/query",
+            params={"q": "SHOW DATABASES"},
+            auth=(username, password),
+            headers={"Accept": "application/json"},
+            timeout=30.0,
+        )
+    except httpx.HTTPError as exc:
+        raise InfluxDBConnectionError(str(exc)) from exc
+
+    if response.status_code in (401, 403):
+        raise InfluxDBAuthError(response.text[:200]) from None
+    if response.status_code >= 400:
+        raise InfluxDBError(f"HTTP {response.status_code}: {response.text[:200]}") from None
+    if database not in _parse_show_databases(response.json()):
+        raise InfluxDBDatabaseNotFound(database)
+
+
+def _parse_show_databases(payload: object) -> set[str]:
+    """Pull database names out of a `SHOW DATABASES` InfluxQL JSON response."""
+    names: set[str] = set()
+    if not isinstance(payload, dict):
+        return names
+    for result in payload.get("results", []) or []:
+        for series in result.get("series", []) or []:
+            for row in series.get("values", []) or []:
+                if row and isinstance(row[0], str):
+                    names.add(row[0])
+    return names
 
 
 def _parse_flux_count_csv(body: str) -> int:
@@ -116,12 +176,14 @@ class InfluxDBSink:
         org: str,
         bucket: str,
         token: str,
+        api_version: str = INFLUXDB_V2,
     ) -> None:
         self._http = http
         self._url = url.rstrip("/")
         self._org = org
         self._bucket = bucket
         self._token = token
+        self._api_version = api_version
 
     async def write(
         self,
@@ -133,7 +195,10 @@ class InfluxDBSink:
     ) -> None:
         if not readings:
             return
-        if replace_window is not None:
+        if replace_window is not None and self._api_version != INFLUXDB_V1:
+            # InfluxDB 1.x has no predicate-delete API, so a replace can't clear
+            # the window first; the write below upserts on (measurement,
+            # tag-set, timestamp) instead. Only v2 gets a true replace.
             await self._delete_points_in_window(usage_point, reading_type, replace_window)
         unit_str = unit(reading_type) or ""
         lines: list[str] = []
@@ -230,6 +295,18 @@ class InfluxDBSink:
 
         if response.status_code in (401, 403):
             raise ConfigEntryAuthFailed("InfluxDB rejected the token") from None
+        if response.status_code in (404, 405, 501):
+            # InfluxDB 1.x (the Home Assistant add-on) back-ports /api/v2/write
+            # and /api/v2/query but NOT the predicate-delete endpoint. Treat a
+            # missing endpoint as "replace unsupported" and fall through to the
+            # write, which upserts on (measurement, tag-set, timestamp) anyway.
+            _LOGGER.warning(
+                "InfluxDB delete endpoint unavailable (HTTP %s) — expected on "
+                "InfluxDB 1.x, which has no predicate-delete API. Skipping the "
+                "replace step; the write will upsert instead.",
+                response.status_code,
+            )
+            return
         if response.status_code >= 400:
             _LOGGER.warning(
                 "InfluxDB delete failed (%s): %s",

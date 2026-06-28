@@ -14,6 +14,7 @@ from homeassistant.util import dt as dt_util
 from custom_components.mojelektro_stats import _bootstrap  # noqa: F401
 from custom_components.mojelektro_stats.const import (
     CONF_INFLUXDB,
+    CONF_INFLUXDB_API_VERSION,
     CONF_INFLUXDB_BUCKET,
     CONF_INFLUXDB_ORG,
     CONF_INFLUXDB_TOKEN,
@@ -26,6 +27,7 @@ from custom_components.mojelektro_stats.const import (
     DEFAULT_SYNC_ENABLED,
     DEFAULT_SYNC_TIME,
     DOMAIN,
+    INFLUXDB_V2,
     PLATFORMS,
     SERVER_TEST,
     SINK_INFLUXDB,
@@ -65,9 +67,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         sinks[SINK_INFLUXDB] = InfluxDBSink(
             influx_http,
             url=influx_cfg[CONF_INFLUXDB_URL],
-            org=influx_cfg[CONF_INFLUXDB_ORG],
+            org=influx_cfg.get(CONF_INFLUXDB_ORG, ""),
             bucket=influx_cfg[CONF_INFLUXDB_BUCKET],
             token=influx_cfg[CONF_INFLUXDB_TOKEN],
+            api_version=influx_cfg.get(CONF_INFLUXDB_API_VERSION, INFLUXDB_V2),
         )
 
     coordinator = MojElektroDataUpdateCoordinator(

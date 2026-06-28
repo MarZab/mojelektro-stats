@@ -42,13 +42,44 @@
           "R_MINUS_T2_DAILY": "Reactive energy delivered, R- — low tariff (MT) (daily meter total, kVArh)"
         }
       },
+      "influxdb_version": {
+        "title": "InfluxDB version",
+        "description": "Pick which InfluxDB you're connecting to. Choose 1 for the Home Assistant InfluxDB add-on, or 2 for InfluxDB 2.x / Cloud.",
+        "data": {
+          "api_version": "InfluxDB version"
+        }
+      },
       "influxdb_config": {
-        "title": "InfluxDB connection",
+        "title": "InfluxDB 2.x connection",
         "data": {
           "url": "URL",
           "org": "Organization",
           "bucket": "Bucket",
           "token": "Token"
+        },
+        "data_description": {
+          "url": "e.g. http://localhost:8086",
+          "org": "InfluxDB organization.",
+          "bucket": "InfluxDB bucket to write into.",
+          "token": "InfluxDB API token with write access."
+        }
+      },
+      "influxdb_config_v1": {
+        "title": "InfluxDB connection",
+        "description": "Connection details for the Home Assistant InfluxDB add-on (InfluxDB 1.x).",
+        "data": {
+          "url": "URL",
+          "database": "Database",
+          "retention_policy": "Retention policy",
+          "username": "Username",
+          "password": "Password"
+        },
+        "data_description": {
+          "url": "e.g. http://a0d7b954-influxdb:8086",
+          "database": "InfluxDB database name (the add-on default is homeassistant).",
+          "retention_policy": "Usually autogen.",
+          "username": "InfluxDB username from the add-on's logins.",
+          "password": "InfluxDB password for that user."
         }
       }
     },
@@ -60,6 +91,7 @@
       "invalid_input": "Invalid input",
       "invalid_influx_auth": "Invalid InfluxDB token",
       "cannot_connect_influx": "Cannot reach InfluxDB",
+      "unknown_database": "Database not found on the InfluxDB server",
       "unknown_influx": "Unexpected InfluxDB error"
     },
     "create_entry": {
@@ -73,7 +105,7 @@
         "menu_options": {
           "edit_measurements": "Edit measurement routing",
           "backfill": "Backfill from a date",
-          "influxdb_config": "Edit InfluxDB connection",
+          "influxdb_version": "Edit InfluxDB connection",
           "sync_schedule": "Daily sync schedule"
         }
       },
@@ -116,13 +148,44 @@
           "R_MINUS_T2_DAILY": "Reactive energy delivered, R- — low tariff (MT) (daily meter total, kVArh)"
         }
       },
+      "influxdb_version": {
+        "title": "InfluxDB version",
+        "description": "Pick which InfluxDB you're connecting to. Choose 1 for the Home Assistant InfluxDB add-on, or 2 for InfluxDB 2.x / Cloud.",
+        "data": {
+          "api_version": "InfluxDB version"
+        }
+      },
       "influxdb_config": {
-        "title": "InfluxDB connection",
+        "title": "InfluxDB 2.x connection",
         "data": {
           "url": "URL",
           "org": "Organization",
           "bucket": "Bucket",
           "token": "Token"
+        },
+        "data_description": {
+          "url": "e.g. http://localhost:8086",
+          "org": "InfluxDB organization.",
+          "bucket": "InfluxDB bucket to write into.",
+          "token": "InfluxDB API token with write access."
+        }
+      },
+      "influxdb_config_v1": {
+        "title": "InfluxDB connection",
+        "description": "Connection details for the Home Assistant InfluxDB add-on (InfluxDB 1.x).",
+        "data": {
+          "url": "URL",
+          "database": "Database",
+          "retention_policy": "Retention policy",
+          "username": "Username",
+          "password": "Password"
+        },
+        "data_description": {
+          "url": "e.g. http://a0d7b954-influxdb:8086",
+          "database": "InfluxDB database name (the add-on default is homeassistant).",
+          "retention_policy": "Usually autogen.",
+          "username": "InfluxDB username from the add-on's logins.",
+          "password": "InfluxDB password for that user."
         }
       },
       "sync_schedule": {
@@ -142,6 +205,7 @@
       "invalid_input": "Invalid input",
       "invalid_influx_auth": "Invalid InfluxDB token",
       "cannot_connect_influx": "Cannot reach InfluxDB",
+      "unknown_database": "Database not found on the InfluxDB server",
       "unknown_influx": "Unexpected InfluxDB error"
     },
     "create_entry": {

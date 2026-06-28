@@ -18,10 +18,14 @@ from custom_components.mojelektro_stats.const import (
     CONF_BACKFILL_FROM,
     CONF_IDENTIFIKATOR,
     CONF_INFLUXDB,
+    CONF_INFLUXDB_API_VERSION,
     CONF_INFLUXDB_BUCKET,
+    CONF_INFLUXDB_DATABASE,
     CONF_INFLUXDB_ORG,
+    CONF_INFLUXDB_PASSWORD,
     CONF_INFLUXDB_TOKEN,
     CONF_INFLUXDB_URL,
+    CONF_INFLUXDB_USERNAME,
     CONF_NAZIV,
     CONF_ROUTING,
     CONF_SERVER,
@@ -30,6 +34,8 @@ from custom_components.mojelektro_stats.const import (
     CONF_TOKEN,
     CONF_USAGE_POINTS,
     DOMAIN,
+    INFLUXDB_V1,
+    INFLUXDB_V2,
     SERVER_TEST,
     SINK_INFLUXDB,
     SINK_STATISTICS,
@@ -109,6 +115,9 @@ async def test_full_flow_routing_is_list_of_sinks(
         routing[KNOWN_READING_TYPES[1].name] = [SINK_STATISTICS, SINK_INFLUXDB]
         with patch(_VALIDATE_INFLUX, return_value=123):
             await hass.config_entries.flow.async_configure(first["flow_id"], routing)
+            await hass.config_entries.flow.async_configure(
+                first["flow_id"], {CONF_INFLUXDB_API_VERSION: INFLUXDB_V2}
+            )
             result = await hass.config_entries.flow.async_configure(
                 first["flow_id"],
                 {
@@ -131,6 +140,49 @@ async def test_full_flow_routing_is_list_of_sinks(
         SINK_STATISTICS,
         SINK_INFLUXDB,
     ]
+
+
+@pytest.mark.ha
+async def test_influxdb_v1_form_composes_v2_shape(
+    recorder_mock: object,
+    enable_custom_integrations: object,
+    hass: HomeAssistant,
+) -> None:
+    """Picking v1 collects native fields and stores them in the v2 shape."""
+    first = await hass.config_entries.flow.async_init(DOMAIN, context={"source": "user"})
+    await hass.config_entries.flow.async_configure(
+        first["flow_id"], {CONF_TOKEN: "tok", CONF_SERVER: SERVER_TEST}
+    )
+    with patch(_VALIDATE, return_value=_FAKE_PAYLOAD):
+        await hass.config_entries.flow.async_configure(
+            first["flow_id"], {CONF_IDENTIFIKATOR: "GSRN1"}
+        )
+        routing: dict[str, list[str]] = _all_empty()
+        routing[KNOWN_READING_TYPES[0].name] = [SINK_INFLUXDB]
+        await hass.config_entries.flow.async_configure(first["flow_id"], routing)
+        await hass.config_entries.flow.async_configure(
+            first["flow_id"], {CONF_INFLUXDB_API_VERSION: INFLUXDB_V1}
+        )
+        with patch(_VALIDATE_INFLUX, return_value=5) as validate:
+            result = await hass.config_entries.flow.async_configure(
+                first["flow_id"],
+                {
+                    CONF_INFLUXDB_URL: "http://a0d7b954-influxdb:8086",
+                    CONF_INFLUXDB_DATABASE: "homeassistant",
+                    CONF_INFLUXDB_USERNAME: "homeassistant",
+                    CONF_INFLUXDB_PASSWORD: "secret",
+                },
+            )
+
+    assert result["type"] == FlowResultType.CREATE_ENTRY
+    stored = result["data"][CONF_INFLUXDB]
+    assert stored[CONF_INFLUXDB_API_VERSION] == INFLUXDB_V1
+    assert stored[CONF_INFLUXDB_BUCKET] == "homeassistant/autogen"
+    assert stored[CONF_INFLUXDB_TOKEN] == "homeassistant:secret"
+    assert stored[CONF_INFLUXDB_ORG] == "-"
+    # The probe receives the composed v2 shape, not the raw v1 fields.
+    composed = validate.call_args.args[1]
+    assert composed[CONF_INFLUXDB_TOKEN] == "homeassistant:secret"
 
 
 @pytest.mark.ha
@@ -192,6 +244,9 @@ async def test_influxdb_config_rejects_bad_connection(
         routing: dict[str, list[str]] = _all_empty()
         routing[KNOWN_READING_TYPES[0].name] = [SINK_INFLUXDB]
         await hass.config_entries.flow.async_configure(first["flow_id"], routing)
+        await hass.config_entries.flow.async_configure(
+            first["flow_id"], {CONF_INFLUXDB_API_VERSION: INFLUXDB_V2}
+        )
         with patch(_VALIDATE_INFLUX, side_effect=InfluxDBAuthError("nope")):
             result = await hass.config_entries.flow.async_configure(
                 first["flow_id"],
@@ -237,7 +292,10 @@ async def test_options_influxdb_config_reports_point_count(
     entry.add_to_hass(hass)
     result = await hass.config_entries.options.async_init(entry.entry_id)
     result = await hass.config_entries.options.async_configure(
-        result["flow_id"], {"next_step_id": "influxdb_config"}
+        result["flow_id"], {"next_step_id": "influxdb_version"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {CONF_INFLUXDB_API_VERSION: INFLUXDB_V2}
     )
     with patch(_VALIDATE_INFLUX, return_value=7):
         result = await hass.config_entries.options.async_configure(

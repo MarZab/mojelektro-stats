@@ -42,13 +42,44 @@
           "R_MINUS_T2_DAILY": "Oddana jalova energija, R- — nizka tarifa (MT) (dnevno stanje števca, kVArh)"
         }
       },
+      "influxdb_version": {
+        "title": "Različica InfluxDB",
+        "description": "Izberite, na katero različico InfluxDB se povezujete. Izberite 1 za InfluxDB v Home Assistantu ali 2 za InfluxDB 2.x / Cloud.",
+        "data": {
+          "api_version": "Različica InfluxDB"
+        }
+      },
       "influxdb_config": {
-        "title": "Povezava z InfluxDB",
+        "title": "Povezava z InfluxDB 2.x",
         "data": {
           "url": "URL",
           "org": "Organizacija",
           "bucket": "Bucket",
           "token": "Žeton"
+        },
+        "data_description": {
+          "url": "npr. http://localhost:8086",
+          "org": "Organizacija InfluxDB.",
+          "bucket": "Bucket InfluxDB za zapisovanje.",
+          "token": "API žeton InfluxDB s pravico pisanja."
+        }
+      },
+      "influxdb_config_v1": {
+        "title": "Povezava z InfluxDB",
+        "description": "Podatki za povezavo z InfluxDB 1.x.",
+        "data": {
+          "url": "URL",
+          "database": "Baza",
+          "retention_policy": "Pravilnik hrambe",
+          "username": "Uporabniško ime",
+          "password": "Geslo"
+        },
+        "data_description": {
+          "url": "npr. http://a0d7b954-influxdb:8086",
+          "database": "Ime baze InfluxDB (privzeto homeassistant).",
+          "retention_policy": "Običajno autogen.",
+          "username": "Uporabniško ime InfluxDB.",
+          "password": "Geslo za tega uporabnika."
         }
       }
     },
@@ -60,6 +91,7 @@
       "invalid_input": "Neveljaven vnos",
       "invalid_influx_auth": "Neveljaven InfluxDB žeton",
       "cannot_connect_influx": "Povezava z InfluxDB ni mogoča",
+      "unknown_database": "Baze ni mogoče najti na strežniku InfluxDB",
       "unknown_influx": "Nepričakovana napaka InfluxDB"
     },
     "create_entry": {
@@ -73,7 +105,7 @@
         "menu_options": {
           "edit_measurements": "Uredi usmerjanje meritev",
           "backfill": "Zgodovinsko polnjenje od datuma",
-          "influxdb_config": "Uredi povezavo z InfluxDB",
+          "influxdb_version": "Uredi povezavo z InfluxDB",
           "sync_schedule": "Urnik dnevne sinhronizacije"
         }
       },
@@ -116,13 +148,44 @@
           "R_MINUS_T2_DAILY": "Oddana jalova energija, R- — nizka tarifa (MT) (dnevno stanje števca, kVArh)"
         }
       },
+      "influxdb_version": {
+        "title": "Različica InfluxDB",
+        "description": "Izberite, na katero različico InfluxDB se povezujete. Izberite 1 za InfluxDB v Home Assistantu ali 2 za InfluxDB 2.x / Cloud.",
+        "data": {
+          "api_version": "Različica InfluxDB"
+        }
+      },
       "influxdb_config": {
-        "title": "Povezava z InfluxDB",
+        "title": "Povezava z InfluxDB 2.x",
         "data": {
           "url": "URL",
           "org": "Organizacija",
           "bucket": "Bucket",
           "token": "Žeton"
+        },
+        "data_description": {
+          "url": "npr. http://localhost:8086",
+          "org": "Organizacija InfluxDB.",
+          "bucket": "Bucket InfluxDB za zapisovanje.",
+          "token": "API žeton InfluxDB s pravico pisanja."
+        }
+      },
+      "influxdb_config_v1": {
+        "title": "Povezava z InfluxDB",
+        "description": "Podatki za povezavo z InfluxDB 1.x.",
+        "data": {
+          "url": "URL",
+          "database": "Baza",
+          "retention_policy": "Pravilnik hrambe",
+          "username": "Uporabniško ime",
+          "password": "Geslo"
+        },
+        "data_description": {
+          "url": "npr. http://a0d7b954-influxdb:8086",
+          "database": "Ime baze InfluxDB (privzeto homeassistant).",
+          "retention_policy": "Običajno autogen.",
+          "username": "Uporabniško ime InfluxDB.",
+          "password": "Geslo za tega uporabnika."
         }
       },
       "sync_schedule": {
@@ -142,6 +205,7 @@
       "invalid_input": "Neveljaven vnos",
       "invalid_influx_auth": "Neveljaven InfluxDB žeton",
       "cannot_connect_influx": "Povezava z InfluxDB ni mogoča",
+      "unknown_database": "Baze ni mogoče najti na strežniku InfluxDB",
       "unknown_influx": "Nepričakovana napaka InfluxDB"
     },
     "create_entry": {

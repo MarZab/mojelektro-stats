@@ -84,6 +84,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
 
+    # Rebuild everything when the OptionsFlow saves — otherwise a changed
+    # InfluxDB connection (e.g. switching to v1) leaves the old sink running,
+    # which would keep using the previous api_version. Backfill doesn't touch
+    # entry.data, so it won't trigger a spurious reload.
+    entry.async_on_unload(entry.add_update_listener(_async_reload_on_update))
+
     await coordinator.async_config_entry_first_refresh()
 
     # Daily sync at the configured local time (default 06:00), unless turned
@@ -113,6 +119,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if PLATFORMS:
         await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
+
+
+async def _async_reload_on_update(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Reload the entry so coordinator + sinks pick up edited config."""
+    await hass.config_entries.async_reload(entry.entry_id)
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:

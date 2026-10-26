@@ -195,7 +195,10 @@ async def test_stanje_uses_value_directly_without_accumulation(
     recorder_mock: object, hass: object
 ) -> None:
     """STANJE (daily cumulative meter state) readings ARE the cumulative total
-    — we shouldn't sum-accumulate them on top of themselves."""
+    — we shouldn't sum-accumulate them on top of themselves. Each reading is
+    attributed to the day it closes, and a fresh statistic gets a zero-change
+    anchor row one day earlier so the first day's change isn't the lifetime
+    register total."""
     sink = StatisticsSink(hass)  # type: ignore[arg-type]
     captured_data: list[list[dict]] = []
 
@@ -209,8 +212,6 @@ async def test_stanje_uses_value_directly_without_accumulation(
         {"timestamp": "2026-06-02T00:00:00+00:00", "value": "1005.0"},
         {"timestamp": "2026-06-03T00:00:00+00:00", "value": "1010.0"},
     ]
-    # _previous_sum_before would normally return some baseline but for STANJE
-    # we don't use it — assert that explicitly by giving it a poison value.
     with (
         patch(
             "custom_components.mojelektro_stats.sinks.statistics.async_add_external_statistics",
@@ -220,8 +221,82 @@ async def test_stanje_uses_value_directly_without_accumulation(
     ):
         await sink.write("4-1234567", info, readings)  # type: ignore[arg-type]
 
-    sums = [row["sum"] for row in captured_data[0]]
-    assert sums == [pytest.approx(1000.0), pytest.approx(1005.0), pytest.approx(1010.0)]
+    data = captured_data[0]
+    assert [row["start"] for row in data] == [
+        datetime(2026, 5, 30, 0, 0, tzinfo=UTC),
+        datetime(2026, 5, 31, 0, 0, tzinfo=UTC),
+        datetime(2026, 6, 1, 0, 0, tzinfo=UTC),
+        datetime(2026, 6, 2, 0, 0, tzinfo=UTC),
+    ]
+    sums = [row["sum"] for row in data]
+    assert sums == [
+        pytest.approx(1000.0),
+        pytest.approx(1000.0),
+        pytest.approx(1005.0),
+        pytest.approx(1010.0),
+    ]
+
+
+@pytest.mark.ha
+async def test_stanje_does_not_anchor_when_prior_data_exists(
+    recorder_mock: object, hass: object
+) -> None:
+    sink = StatisticsSink(hass)  # type: ignore[arg-type]
+    captured_data: list[list[dict]] = []
+
+    def fake(_hass: object, _md: dict, data: list) -> None:
+        captured_data.append(list(data))
+
+    info = BY_NAME["A_PLUS_T0_DAILY"]
+    readings = [
+        {"timestamp": "2026-06-02T00:00:00+00:00", "value": "1005.0"},
+        {"timestamp": "2026-06-03T00:00:00+00:00", "value": "1010.0"},
+    ]
+    prior_hour = datetime(2026, 5, 31, 0, 0, tzinfo=UTC)
+    with (
+        patch(
+            "custom_components.mojelektro_stats.sinks.statistics.async_add_external_statistics",
+            side_effect=fake,
+        ),
+        patch.object(StatisticsSink, "_previous_sum_before", return_value=(1000.0, prior_hour)),
+    ):
+        await sink.write("4-1234567", info, readings)  # type: ignore[arg-type]
+
+    assert len(captured_data[0]) == 2
+    assert captured_data[0][0]["start"] == datetime(2026, 6, 1, 0, 0, tzinfo=UTC)
+
+
+@pytest.mark.ha
+async def test_stanje_back_to_back_chunks_do_not_anchor_again(
+    recorder_mock: object, hass: object
+) -> None:
+    sink = StatisticsSink(hass)  # type: ignore[arg-type]
+    captured: list[list[dict]] = []
+
+    def fake(_hass: object, _md: dict, data: list) -> None:
+        captured.append(list(data))
+
+    info = BY_NAME["A_PLUS_T0_DAILY"]
+    chunk_a = [
+        {"timestamp": "2026-06-01T00:00:00+00:00", "value": "1000.0"},
+        {"timestamp": "2026-06-02T00:00:00+00:00", "value": "1005.0"},
+    ]
+    chunk_b = [
+        {"timestamp": "2026-06-03T00:00:00+00:00", "value": "1010.0"},
+    ]
+    with (
+        patch(
+            "custom_components.mojelektro_stats.sinks.statistics.async_add_external_statistics",
+            side_effect=fake,
+        ),
+        patch.object(StatisticsSink, "_previous_sum_before", return_value=(0.0, None)),
+    ):
+        await sink.write("4-1234567", info, chunk_a)  # type: ignore[arg-type]
+        await sink.write("4-1234567", info, chunk_b)  # type: ignore[arg-type]
+
+    assert len(captured[0]) == 3
+    assert len(captured[1]) == 1
+    assert captured[1][0]["start"] == datetime(2026, 6, 2, 0, 0, tzinfo=UTC)
 
 
 @pytest.mark.ha

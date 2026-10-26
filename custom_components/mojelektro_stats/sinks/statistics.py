@@ -23,7 +23,7 @@ from __future__ import annotations
 
 import logging
 from collections import defaultdict
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timedelta
 from typing import Final
 
 from homeassistant.components.recorder.db_schema import Statistics, StatisticsMeta
@@ -116,7 +116,10 @@ class StatisticsSink:
             value = _parse_value(r.get("value"))
             if value is None:
                 continue
-            hourly[_truncate_to_hour(ts)].append(value)
+            hour = _truncate_to_hour(ts)
+            if is_state:
+                hour -= timedelta(hours=24)
+            hourly[hour].append(value)
 
         if not hourly:
             return
@@ -124,6 +127,11 @@ class StatisticsSink:
         first_hour = min(hourly)
         baseline = 0.0
         skip_through: datetime | None = None
+        if is_state and statistic_id not in self._tail:
+            _, prior_hour = await self._previous_sum_before(statistic_id, first_hour)
+            if prior_hour is None:
+                hourly[first_hour - timedelta(hours=24)] = list(hourly[first_hour])
+                first_hour = min(hourly)
         if has_sum and not is_state:
             from_cache, skip_through = self._resolve_baseline(statistic_id, first_hour)
             if from_cache is not None:
@@ -169,6 +177,8 @@ class StatisticsSink:
             # Remember our final cumulative so the next chunk in this cycle
             # can pick up without a recorder round-trip.
             self._tail[statistic_id] = (max(hourly), cumulative)
+        elif is_state:
+            self._tail[statistic_id] = (max(hourly), float(data[-1]["sum"]))
         _LOGGER.debug(
             "Imported %d hourly statistics rows for %s (from %d raw samples, baseline=%s)",
             len(data),

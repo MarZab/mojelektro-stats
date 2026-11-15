@@ -53,6 +53,9 @@ Pure routing. No I/O. Takes `(readings, per_measurement_config)`, calls the righ
 Each sink is a class implementing a common `async def write(...)` interface, owning its own batching:
 
 - `StatisticsSink` — batches by `(usage_point, reading_type_id)`, calls `homeassistant.components.recorder.statistics.async_import_statistics` once per batch. `statistic_id` shape: `mojelektro_stats:<usage_point>_<reading_type_id>`.
+  - **STANJE (daily cumulative register) timing:** the API stamps each daily reading at the midnight *after* the day it closes. The sink places each row at the Europe/Ljubljana midnight that starts the day it closes (local date of `timestamp - 1 s`), which matches the mojelektro.si portal and the CLI's `daily` command. A fixed 24 h shift would be wrong on the 23-hour spring DST day. The value is written straight through as `sum`, with no accumulation.
+  - **STANJE anchor row:** if the statistic has no earlier row in the recorder and nothing is cached in `_tail`, the sink writes one extra row one local day before the first reading, with the same value. Without it, HA's `change` for day one would be the whole lifetime register total.
+  - **Data imported before 1.0.1** sits one day late. Running a backfill from the options flow re-imports the range with `replace_window`, which deletes the old rows first and fixes them.
 - `InfluxDBSink` — one async httpx client per config entry, batched line-protocol POST to `/api/v2/write?org=...&bucket=...&precision=s`. Token from OptionsFlow.
 
 Sinks raise on hard failures. The dispatcher catches per-point and signals back to the coordinator.

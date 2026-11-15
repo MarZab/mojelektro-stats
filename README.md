@@ -36,6 +36,8 @@ The integration writes its data as Home Assistant **long-term statistics** (stat
 - **Energy Dashboard** — the energy reading types appear in **Settings → Dashboards → Energy** (they carry the right `unit_class`). Add the cumulative `A+`/`A-` registers there for grid consumption/return — including the per-tariff (VT/MT) splits.
 - **`statistics-graph` card** — for power and anything else, add a [Statistics graph card](https://www.home-assistant.io/dashboards/statistics-graph/) and pick the `mojelektro_stats:…` statistics. Use `change` for cumulative energy and `mean`/`min`/`max` for power.
 
+> **Upgrading from 1.0.0:** daily register readings used to show up one day late. To fix history that was already imported, run **Configure → Backfill from a date** with your earliest date.
+
 ## Repository layout
 
 | Path | Purpose |

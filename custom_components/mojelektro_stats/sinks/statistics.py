@@ -14,7 +14,9 @@ cumulative meter total). Both need different handling:
   stored in HA. (Without that baseline, each chunked batch restarts cumulative
   at 0 and HA reads the boundary as a negative-consumption meter reset.)
 - Energy daily (A_/R_ STANJE): each value is already the cumulative meter
-  total; `sum = value` directly, no accumulation.
+  total; `sum = value` directly, no accumulation. The row is placed at the
+  Europe/Ljubljana midnight that starts the day the reading closes (see
+  `_closing_day_start`).
 - Power (P_/Q_): instantaneous, not cumulative — report mean/min/max across
   the 4 fifteen-minute samples instead of a running sum.
 """
@@ -25,6 +27,7 @@ import logging
 from collections import defaultdict
 from datetime import date, datetime, time, timedelta
 from typing import Final
+from zoneinfo import ZoneInfo
 
 from homeassistant.components.recorder.db_schema import Statistics, StatisticsMeta
 from homeassistant.components.recorder.models import (
@@ -52,6 +55,9 @@ from mojelektro_api import IntervalReading, ReadingTypeInfo
 
 _LOGGER: Final = logging.getLogger(__name__)
 _VRSTA_STATE: Final = "STANJE"
+# Moj Elektro day boundaries are Slovenian local time, whatever HA's own
+# time zone is set to.
+_METER_TZ: Final = ZoneInfo("Europe/Ljubljana")
 
 
 class StatisticsSink:
@@ -116,9 +122,7 @@ class StatisticsSink:
             value = _parse_value(r.get("value"))
             if value is None:
                 continue
-            hour = _truncate_to_hour(ts)
-            if is_state:
-                hour -= timedelta(hours=24)
+            hour = _closing_day_start(ts) if is_state else _truncate_to_hour(ts)
             hourly[hour].append(value)
 
         if not hourly:
@@ -130,7 +134,7 @@ class StatisticsSink:
         if is_state and statistic_id not in self._tail:
             _, prior_hour = await self._previous_sum_before(statistic_id, first_hour)
             if prior_hour is None:
-                hourly[first_hour - timedelta(hours=24)] = list(hourly[first_hour])
+                hourly[_previous_day_start(first_hour)] = list(hourly[first_hour])
                 first_hour = min(hourly)
         if has_sum and not is_state:
             from_cache, skip_through = self._resolve_baseline(statistic_id, first_hour)
@@ -160,7 +164,8 @@ class StatisticsSink:
                 # STANJE: each reading is the meter's lifetime total at that
                 # moment. Pick the latest sample within the bucket (typically
                 # just one for 24 h period) and write it through.
-                datum["sum"] = round(max(values), 4)
+                cumulative = round(max(values), 4)
+                datum["sum"] = cumulative
             elif has_sum:
                 cumulative += sum(values)
                 datum["sum"] = round(cumulative, 4)
@@ -178,7 +183,9 @@ class StatisticsSink:
             # can pick up without a recorder round-trip.
             self._tail[statistic_id] = (max(hourly), cumulative)
         elif is_state:
-            self._tail[statistic_id] = (max(hourly), float(data[-1]["sum"]))
+            # STANJE doesn't need a baseline; the tail entry only marks the
+            # statistic as already anchored for later chunks in this cycle.
+            self._tail[statistic_id] = (max(hourly), cumulative)
         _LOGGER.debug(
             "Imported %d hourly statistics rows for %s (from %d raw samples, baseline=%s)",
             len(data),
@@ -238,6 +245,28 @@ class StatisticsSink:
 
 def _truncate_to_hour(ts: datetime) -> datetime:
     return ts.replace(minute=0, second=0, microsecond=0)
+
+
+def _closing_day_start(ts: datetime) -> datetime:
+    """UTC start of the meter-local day a STANJE reading closes.
+
+    The API stamps each daily register reading at the local midnight
+    *after* the day it describes. Subtracting one second and taking the
+    local date gives that day, also on 23/25-hour DST days where a fixed
+    24 h shift would land on the wrong date.
+    """
+    local_day = (ts.astimezone(_METER_TZ) - timedelta(seconds=1)).date()
+    return _local_midnight_utc(local_day)
+
+
+def _previous_day_start(day_start: datetime) -> datetime:
+    """UTC start of the meter-local day before ``day_start``."""
+    local_day = day_start.astimezone(_METER_TZ).date() - timedelta(days=1)
+    return _local_midnight_utc(local_day)
+
+
+def _local_midnight_utc(day: date) -> datetime:
+    return datetime.combine(day, time.min, tzinfo=_METER_TZ).astimezone(dt_util.UTC)
 
 
 def _window_to_datetimes(window: tuple[date, date]) -> tuple[datetime, datetime]:

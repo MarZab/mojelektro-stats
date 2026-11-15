@@ -1,4 +1,4 @@
-"""DataUpdateCoordinator for the Moj Elektro integration.
+"""DataUpdateCoordinator for the Moj Elektro Stats integration.
 
 Polls once per day at 06:00 local time (the trigger is registered in
 `async_setup_entry`). Per-usage-point window `[last_synced_end, cutoff)` where

@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "title": "Moj Elektro",
+        "title": "Moj Elektro Stats",
         "description": "Vnesite svoj API žeton za Moj Elektro.",
         "data": {
           "api_token": "API žeton",
@@ -101,7 +101,7 @@
   "options": {
     "step": {
       "init": {
-        "title": "Moj Elektro",
+        "title": "Moj Elektro Stats",
         "menu_options": {
           "edit_measurements": "Uredi usmerjanje meritev",
           "backfill": "Zgodovinsko polnjenje od datuma",

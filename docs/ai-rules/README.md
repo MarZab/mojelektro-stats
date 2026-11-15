@@ -1,6 +1,6 @@
 # AI rules
 
-Coding standards for the **Moj Elektro HACS integration**. Project overview and hard rules: [`AGENTS.md`](../../AGENTS.md).
+Coding standards for the **Moj Elektro Stats HACS integration**. Project overview and hard rules: [`AGENTS.md`](../../AGENTS.md).
 
 Read **one** rule file matching your task. Default to integration rules unless you are explicitly working on dev tooling.
 

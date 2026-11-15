@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "title": "Moj Elektro",
+        "title": "Moj Elektro Stats",
         "description": "Enter your Moj Elektro API token.",
         "data": {
           "api_token": "API token",
@@ -101,7 +101,7 @@
   "options": {
     "step": {
       "init": {
-        "title": "Moj Elektro",
+        "title": "Moj Elektro Stats",
         "menu_options": {
           "edit_measurements": "Edit measurement routing",
           "backfill": "Backfill from a date",

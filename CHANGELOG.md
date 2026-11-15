@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to the Moj Elektro integration. Versions follow [SemVer](https://semver.org); pre-releases (`X.Y.ZbN`, `X.Y.ZrcN`) go to the HACS beta channel.
+All notable changes to the Moj Elektro Stats integration. Versions follow [SemVer](https://semver.org); pre-releases (`X.Y.ZbN`, `X.Y.ZrcN`) go to the HACS beta channel.
 
 ## 1.0.1
 
@@ -16,7 +16,7 @@ Only Home Assistant statistics for the **daily register** reading types were aff
 
 Statistics imported before 1.0.1 stay on the wrong day until they're rewritten. After updating and restarting Home Assistant:
 
-1. Go to **Settings → Devices & Services → Moj Elektro → Configure**.
+1. Go to **Settings → Devices & Services → Moj Elektro Stats → Configure**.
 2. Choose **Backfill from a date** and pick the earliest date you imported (up to 2 years back).
 
 The backfill deletes the existing statistics in each window before importing it again, so the old one-day-late rows are replaced rather than duplicated. It runs in the background and can take a few minutes for long histories. Afterwards, daily totals in Home Assistant should match the mojelektro.si portal.

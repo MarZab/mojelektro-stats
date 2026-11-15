@@ -1,6 +1,6 @@
 {
   "domain": "mojelektro_stats",
-  "name": "Moj Elektro",
+  "name": "Moj Elektro Stats",
   "categories": [
     "energy.meters_monitoring"
   ],

@@ -1,4 +1,4 @@
-"""ConfigFlow + OptionsFlow for the Moj Elektro integration.
+"""ConfigFlow + OptionsFlow for the Moj Elektro Stats integration.
 
 One config entry pairs one Moj Elektro token (a single "Storitev" / service
 account) with exactly one merilno mesto. The API permits more than one meter
@@ -617,7 +617,7 @@ def _entry_title(data: Mapping[str, Any]) -> str:
         candidate = first.get(CONF_NAZIV) or first.get(CONF_IDENTIFIKATOR)
         if candidate:
             return str(candidate)
-    return "Moj Elektro"
+    return "Moj Elektro Stats"
 
 
 def _read_env_influxdb() -> dict[str, str] | None:

@@ -1,4 +1,4 @@
-# Developer tooling for the Moj Elektro HACS integration.
+# Developer tooling for the Moj Elektro Stats HACS integration.
 #
 #   mise install        # Python + uv at the pinned versions
 #   mise run setup      # uv sync (dev dependencies into .venv)

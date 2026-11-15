@@ -1,4 +1,4 @@
-# Moj Elektro — HACS Home Assistant integration
+# Moj Elektro Stats — HACS Home Assistant integration
 #
 # The shipped product is custom_components/mojelektro_stats/ (self-contained, no PyPI deps).
 # This file configures developer tooling only: lint, typecheck, tests, and the

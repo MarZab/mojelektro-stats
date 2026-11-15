@@ -1,11 +1,11 @@
-# Dev stack for the Moj Elektro integration.
+# Dev stack for the Moj Elektro Stats integration.
 #
 #   mise run dev:up      # start HA + InfluxDB
 #   mise run dev:logs    # tail HA logs
 #   mise run dev:down    # stop
 #
 # HA at http://localhost:8123 (first run: create an owner account, then add the
-# Moj Elektro integration via Settings → Devices & Services → Add Integration).
+# Moj Elektro Stats integration via Settings → Devices & Services → Add Integration).
 # The integration under custom_components/mojelektro_stats is bind-mounted (lib
 # included), so edits show up in HA after a restart (Settings → System → Restart).
 #
@@ -26,7 +26,7 @@ services:
     privileged: true
     environment:
       - TZ=Europe/Ljubljana
-      # Defaults the InfluxDB step in the Moj Elektro ConfigFlow / OptionsFlow
+      # Defaults the InfluxDB step in the Moj Elektro Stats ConfigFlow / OptionsFlow
       # picks up so dev users don't have to re-type the connection. Empty
       # token by default — set MOJELEKTRO_INFLUXDB_TOKEN locally (or in .env)
       # if you want it pre-filled.

@@ -27,7 +27,7 @@ async def test_setup_and_unload(
             CONF_SERVER: SERVER_TEST,
             CONF_USAGE_POINTS: [],
         },
-        title="Moj Elektro",
+        title="Moj Elektro Stats",
     )
     entry.add_to_hass(hass)
     assert await hass.config_entries.async_setup(entry.entry_id)

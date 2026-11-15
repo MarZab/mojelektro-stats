@@ -200,7 +200,7 @@ def release(root: Path, spec: str, base: str, *, dry_run: bool, yes: bool) -> No
     write_version(root, target)
     _git(root, "add", str(ABOUT), str(MANIFEST))
     _git(root, "commit", "-m", f"chore: release {tag}")
-    _git(root, "tag", "-a", tag, "-m", f"Moj Elektro {tag}")
+    _git(root, "tag", "-a", tag, "-m", f"Moj Elektro Stats {tag}")
     print(f"committed and tagged {tag}")
 
     branch = _git(root, "rev-parse", "--abbrev-ref", "HEAD")

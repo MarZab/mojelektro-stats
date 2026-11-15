@@ -1,4 +1,4 @@
-# Moj Elektro
+# Moj Elektro Stats
 
 Home Assistant integration for [Moj Elektro](https://mojelektro.si) electricity data ([API docs](https://docs.informatika.si/mojelektro/api/)). Distributed as a [HACS](https://hacs.xyz/) custom component — self-contained, no extra Python packages to install.
 
@@ -26,8 +26,8 @@ Home Assistant 2026.11+ ships HACS built in as **Marketplace**.
 
 1. **Settings → Marketplace** → ⋮ → **Custom repositories**, add `https://github.com/MarZab/mojelektro-stats` (category: **Integration**).
    On Home Assistant 2026.10 or older, do the same from HACS → ⋮ → **Custom repositories**.
-2. Install **Moj Elektro** and restart Home Assistant.
-3. Add the integration via **Settings → Devices & Services → Add Integration → Moj Elektro**.
+2. Install **Moj Elektro Stats** and restart Home Assistant.
+3. Add the integration via **Settings → Devices & Services → Add Integration → Moj Elektro Stats**.
 
 Manual install: copy `custom_components/mojelektro_stats/` into your HA `config/custom_components/` directory and restart. The integration bundles its own typed API client under `lib/` — nothing else to install.
 

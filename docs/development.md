@@ -102,6 +102,8 @@ mise run dev:restart # pick up custom_components edits
 
 The integration is bind-mounted from `custom_components/mojelektro_stats/` (lib included).
 
+The stack runs Home Assistant 2026.11.1 and InfluxDB 2.9.1. Keep the HA image in `docker/Dockerfile.ha` on the same version as the `homeassistant` floor in `pyproject.toml` (`override-dependencies`), so manual testing and the test suite use the same HA; `mise run dev:build` picks up a changed image.
+
 ## Test cassettes
 
 CI replays committed VCR cassettes — no live API calls. Re-recording procedure: [`tests/lib/cassettes/README.md`](../tests/lib/cassettes/README.md).

@@ -44,7 +44,7 @@ services:
       - influxdb
 
   influxdb:
-    image: influxdb:2-alpine
+    image: influxdb:2.9.1-alpine
     container_name: mojelektro-influxdb
     restart: unless-stopped
     environment:

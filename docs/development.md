@@ -74,11 +74,22 @@ See [`ai-rules/home-assistant.md`](ai-rules/home-assistant.md) for integration p
 
 Debug the Moj Elektro API without running Home Assistant:
 
+Put your credentials in `.env` at the repo root (gitignored). The CLI loads it on start, and variables already set in your shell take precedence:
+
 ```bash
-export MOJELEKTRO_APIKEY="<token>"
-mise run cli -- info <identifikator>
-mise run cli -- readings <identifikator> -t A_PLUS_15MIN --days 7
+MOJELEKTRO_APIKEY=<token>
+MOJELEKTRO_USAGE_POINT=<identifikator>   # default for info / contract / readings
 ```
+
+```bash
+mise run cli -- info                                  # uses MOJELEKTRO_USAGE_POINT
+mise run cli -- readings -t A_PLUS_T0_DAILY --days 7
+mise run cli -- readings 4-XXXXXXX -t A_PLUS_15MIN     # an explicit argument wins
+mise run cli -- daily --days 14 --check                # per-day kWh from daily registers
+mise run cli -- hourly --start 2026-10-24               # per-hour kWh, checked against the register
+```
+
+`daily` columns default to A+ (total, VT, MT) and A- (total). Override them with `-t`, or set `MOJELEKTRO_DAILY_TYPES=A_PLUS_T0_DAILY,A_MINUS_T0_DAILY` in `.env`.
 
 ## Docker dev stack
 

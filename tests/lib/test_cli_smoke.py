@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import pytest
 from typer.testing import CliRunner
 
 from cli import app
@@ -45,8 +46,9 @@ def test_readings_help() -> None:
     assert "--days" in result.stdout
 
 
-def test_readings_no_args_shows_help() -> None:
+def test_readings_no_args_shows_help(monkeypatch: pytest.MonkeyPatch) -> None:
     """`mojelektro readings` (no USAGE_POINT) prints help and exits 0."""
+    monkeypatch.delenv("MOJELEKTRO_USAGE_POINT", raising=False)
     result = CliRunner().invoke(app, ["readings"])
     assert result.exit_code == 0
     assert "USAGE_POINT" in result.stdout

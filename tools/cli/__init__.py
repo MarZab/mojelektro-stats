@@ -121,6 +121,8 @@ def _root(
     ctx.obj = {"token": token, "server": server, "format": fmt, "verbose": verbose}
 
 
+from cli.daily import daily_cmd  # noqa: E402
+from cli.hourly import hourly_cmd  # noqa: E402
 from cli.meter import contract_cmd, info_cmd  # noqa: E402
 from cli.readings import readings_cmd  # noqa: E402
 from cli.types import types_cmd  # noqa: E402
@@ -132,3 +134,5 @@ app.command("types")(handle_errors(types_cmd))
 app.command("info")(handle_errors(info_cmd))
 app.command("contract")(handle_errors(contract_cmd))
 app.command("readings")(readings_cmd)
+app.command("daily")(daily_cmd)
+app.command("hourly")(hourly_cmd)

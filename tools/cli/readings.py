@@ -8,6 +8,7 @@ import questionary
 import typer
 
 from cli._client import build_client
+from cli._env import USAGE_POINT_ENVVAR
 from cli._format import (
     OutputFormat,
     compute_widths,
@@ -100,7 +101,9 @@ async def _prompt_types_async() -> list[str]:
 
 def _readings(
     ctx: typer.Context,
-    usage_point: str | None = typer.Argument(None, help="identifikator or gsrnMm."),
+    usage_point: str | None = typer.Argument(
+        None, envvar=USAGE_POINT_ENVVAR, help="identifikator or gsrnMm."
+    ),
     type_: list[str] = typer.Option(None, "--type", "-t", help="Reading type name (repeatable)."),
     option: list[str] = typer.Option(None, "--option", help="Raw reading type code (repeatable)."),
     start: datetime | None = typer.Option(

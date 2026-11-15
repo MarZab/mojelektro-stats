@@ -33,6 +33,7 @@ mise run dev:up                # docker compose (HA + InfluxDB)
 mise run dev:down              # stop dev stack
 mise run regen-reading-types   # refresh lib/reading_types.py from cassette
 mise run clean                 # remove caches
+mise run sandbox -- plan       # sbx dev sandbox: plan | create | run | rm (tools/sandbox/run.sh)
 ```
 
 To add a task, drop an executable script in `tools/tasks/` with a `#MISE description="…"` header. Subdirectories become namespaces (`tools/tasks/dev/up` → `dev:up`, `test/_default` → `test`).

@@ -1,0 +1,12 @@
+# syntax=docker/sandbox-kit:3
+# This project's own sbx kit, a v3 mixin over the agent's workload (https://github.com/docker/sandbox-kit-spec).
+# Files and environment it adds go in a mojelektro.dockerfile beside this file (its last stage
+# FROM scratch; only what it copies in is added). System packages go in an install hook.
+# sbx reads a kit only when it creates the sandbox: a change needs a recreate.
+schemaVersion: "3"
+kind: mixin
+displayName: "mojelektro"
+version: "0.1.0"  # sbx requires a version for provides; bump it with each change
+provides: ["mojelektro"]
+
+capabilities: []  # tools, hosts, and notes for the agent go here (https://docs.docker.com/ai/sandboxes/customize/kits-v2/)

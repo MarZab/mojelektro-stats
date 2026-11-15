@@ -15,4 +15,4 @@ uv = "latest"
 mr = "mise run"
 
 [task_config]
-includes = ["tools/tasks"]
+includes = ["tools/tasks", "tools/sandbox"]

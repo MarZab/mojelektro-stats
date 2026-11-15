@@ -1,0 +1,10 @@
+# This project's sandbox, as an sbx environment file (https://docs.docker.com/ai/sandboxes/configuration/environment-files/).
+# Run it with `sbx env run` in this folder (sbx 0.51 or later).
+schemaVersion: "1"
+name: "mojelektro"
+agent: "claude"
+workspace: "."
+
+kits:
+  # This project's own kit: tools, hosts, and what the agent should know.
+  - "./tools/sandbox/mojelektro"

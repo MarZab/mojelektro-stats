@@ -8,8 +8,9 @@ pre-releases `X.Y.ZaN` / `X.Y.ZbN` / `X.Y.ZrcN` (beta channel), matching what
 `.github/workflows/release.yaml` accepts.
 
     mise run release                    show the current version and channel
-    mise run release -- beta            bump, commit, tag vX, then ask to push
-    mise run release -- 1.1.0 --dry-run print what it would do
+    mise run release -- beta            show the plan, confirm, then bump, commit,
+                                        tag vX and push
+    mise run release -- 1.1.0 --dry-run show the plan and stop
 
 KIND: patch | minor | major | alpha | beta | rc | final.
 """
@@ -27,6 +28,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[2]
 ABOUT = Path("custom_components/mojelektro_stats/lib/mojelektro_api/__about__.py")
 MANIFEST = Path("custom_components/mojelektro_stats/manifest.json")
+CHANGELOG = Path("CHANGELOG.md")
 
 _VERSION_RE = re.compile(r"^(\d+)\.(\d+)\.(\d+)(?:(a|b|rc)(\d+))?$")
 _ABOUT_RE = re.compile(r'^__version__ = "([^"]*)"$', re.MULTILINE)
@@ -168,11 +170,6 @@ def _git(root: Path, *args: str) -> str:
     return result.stdout.strip()
 
 
-def _require_clean(root: Path) -> None:
-    if _git(root, "status", "--porcelain", "--untracked-files=no"):
-        raise ReleaseError("working tree has uncommitted changes; commit or stash them first")
-
-
 def _tag_exists(root: Path, tag: str) -> bool:
     return bool(_git(root, "tag", "--list", tag))
 
@@ -181,34 +178,72 @@ def _tag_exists(root: Path, tag: str) -> bool:
 
 
 def _confirm(prompt: str) -> bool:
-    """Ask on a terminal; anything but y/yes (or no terminal) means no."""
-    return sys.stdin.isatty() and input(prompt).strip().lower() in ("y", "yes")
+    """Ask on a terminal; anything but y/yes means no."""
+    return input(prompt).strip().lower() in ("y", "yes")
+
+
+def _plan(root: Path, current: Version, target: Version, branch: str, remote_url: str) -> str:
+    tag = f"v{target}"
+    published = (
+        "a GitHub pre-release (HACS beta channel)"
+        if target.is_prerelease
+        else "a full GitHub Release, marked latest"
+    )
+    lines = [
+        f"Release {tag}  ({target.channel})",
+        "",
+        f"  1. set the version {current} -> {target} in",
+        f"       {ABOUT}",
+        f"       {MANIFEST}",
+        f'  2. commit on {branch}: "chore: release {tag}"',
+        f"  3. create the annotated tag {tag}",
+        f"  4. push {branch} and {tag} to origin ({remote_url})",
+        f"     -> release.yaml publishes {tag} as {published}",
+    ]
+    changelog = root / CHANGELOG
+    if not changelog.exists() or not re.search(
+        rf"^## {re.escape(str(target))}\s*$", changelog.read_text("utf-8"), re.MULTILINE
+    ):
+        lines += ["", f"  warning: {CHANGELOG} has no '## {target}' section"]
+    return "\n".join(lines)
 
 
 def release(root: Path, spec: str, base: str, *, dry_run: bool, yes: bool) -> None:
-    """Bump both version files, commit, tag, then push (after confirming)."""
+    """Show what will happen, confirm once, then bump, commit, tag and push."""
     current = current_version(root)
     target = resolve_target(current, spec, base)
     tag = f"v{target}"
-    print(f"{current} -> {target}  ({target.channel})")
-    if dry_run:
-        return
-    _require_clean(root)
+    blockers: list[str] = []
+    if _git(root, "status", "--porcelain", "--untracked-files=no"):
+        blockers.append("working tree has uncommitted changes; commit or stash them first")
     if _tag_exists(root, tag):
-        raise ReleaseError(f"tag {tag} already exists")
+        blockers.append(f"tag {tag} already exists")
+    if blockers and not dry_run:
+        raise ReleaseError("; ".join(blockers))
+    branch = _git(root, "rev-parse", "--abbrev-ref", "HEAD")
+    remote_url = _git(root, "remote", "get-url", "origin")
+
+    print(_plan(root, current, target, branch, remote_url))
+    for blocker in blockers:
+        print(f"  blocked: {blocker}")
+    print()
+    if dry_run:
+        print("dry run: nothing changed")
+        return
+    if not yes:
+        if not sys.stdin.isatty():
+            raise ReleaseError("no terminal to confirm on; pass --yes to release anyway")
+        if not _confirm("Proceed? [y/N] "):
+            print("aborted: nothing changed")
+            return
 
     write_version(root, target)
     _git(root, "add", str(ABOUT), str(MANIFEST))
     _git(root, "commit", "-m", f"chore: release {tag}")
     _git(root, "tag", "-a", tag, "-m", f"Moj Elektro Stats {tag}")
     print(f"committed and tagged {tag}")
-
-    branch = _git(root, "rev-parse", "--abbrev-ref", "HEAD")
-    if not (yes or _confirm(f"Push {branch} and {tag}? [y/N] ")):
-        print(f"not pushed. When ready: git push origin {branch} {tag}")
-        return
     _git(root, "push", "origin", branch, tag)
-    print(f"pushed {branch} and {tag}; the release workflow publishes the GitHub release")
+    print(f"pushed {branch} and {tag}; release.yaml now publishes the GitHub release")
 
 
 def main(argv: list[str] | None = None, root: Path = REPO_ROOT) -> int:
@@ -228,8 +263,8 @@ def main(argv: list[str] | None = None, root: Path = REPO_ROOT) -> int:
         default="minor",
         help="part a pre-release from a stable version bumps (default: minor)",
     )
-    parser.add_argument("--dry-run", action="store_true", help="only print the new version")
-    parser.add_argument("--yes", "-y", action="store_true", help="push without asking")
+    parser.add_argument("--dry-run", action="store_true", help="print the plan and stop")
+    parser.add_argument("--yes", "-y", action="store_true", help="skip the confirmation")
     args = parser.parse_args(argv)
     try:
         if args.spec is None:

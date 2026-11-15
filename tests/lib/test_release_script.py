@@ -123,20 +123,83 @@ def test_release_bumps_commits_tags_and_pushes(repo: Path) -> None:
     assert "refs/heads/main" in remote
 
 
-def test_release_without_tty_tags_but_does_not_push(
+def _unchanged(repo: Path) -> None:
+    assert str(current_version(repo)) == "1.0.1"
+    assert _git(repo, "log", "-1", "--format=%s") == "init"
+    assert _git(repo, "tag", "--list") == ""
+    assert _git(repo, "ls-remote", "origin") == ""
+
+
+def _fake_terminal(monkeypatch: pytest.MonkeyPatch, answer: str) -> list[str]:
+    prompts: list[str] = []
+    monkeypatch.setattr("sys.stdin.isatty", lambda: True)
+
+    def fake_input(prompt: str) -> str:
+        prompts.append(prompt)
+        return answer
+
+    monkeypatch.setattr("builtins.input", fake_input)
+    return prompts
+
+
+def test_plan_lists_every_step(repo: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    assert main(["minor", "--dry-run"], root=repo) == 0
+    out = capsys.readouterr().out
+    assert "Release v1.1.0  (stable)" in out
+    assert "set the version 1.0.1 -> 1.1.0" in out
+    assert 'commit on main: "chore: release v1.1.0"' in out
+    assert "create the annotated tag v1.1.0" in out
+    assert "push main and v1.1.0 to origin" in out
+    assert "full GitHub Release, marked latest" in out
+    assert "dry run: nothing changed" in out
+
+
+def test_plan_names_a_prerelease(repo: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    assert main(["beta", "--dry-run"], root=repo) == 0
+    assert "GitHub pre-release (HACS beta channel)" in capsys.readouterr().out
+
+
+def test_plan_warns_about_a_missing_changelog_section(
     repo: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    assert main(["1.0.2"], root=repo) == 0
-    assert _git(repo, "tag", "--list") == "v1.0.2"
-    assert _git(repo, "ls-remote", "origin") == ""
-    assert "git push origin main v1.0.2" in capsys.readouterr().out
+    assert main(["patch", "--dry-run"], root=repo) == 0
+    assert "CHANGELOG.md has no '## 1.0.2' section" in capsys.readouterr().out
+
+    (repo / "CHANGELOG.md").write_text("# Changelog\n\n## 1.0.2\n\n- fix\n")
+    _git(repo, "add", "CHANGELOG.md")
+    _git(repo, "commit", "-q", "-m", "changelog")
+    assert main(["patch", "--dry-run"], root=repo) == 0
+    assert "warning" not in capsys.readouterr().out
+
+
+def test_declining_changes_nothing(
+    repo: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    prompts = _fake_terminal(monkeypatch, "n")
+    assert main(["patch"], root=repo) == 0
+    assert prompts == ["Proceed? [y/N] "]
+    assert "aborted: nothing changed" in capsys.readouterr().out
+    _unchanged(repo)
+
+
+def test_confirming_releases(repo: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    prompts = _fake_terminal(monkeypatch, "y")
+    assert main(["patch"], root=repo) == 0
+    assert len(prompts) == 1  # one confirmation covers every step
+    assert str(current_version(repo)) == "1.0.2"
+    assert "refs/tags/v1.0.2" in _git(repo, "ls-remote", "origin")
+
+
+def test_without_a_terminal_it_needs_yes(repo: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    assert main(["1.0.2"], root=repo) == 1  # pytest's stdin is not a terminal
+    assert "--yes" in capsys.readouterr().err
+    _unchanged(repo)
 
 
 def test_dry_run_changes_nothing(repo: Path, capsys: pytest.CaptureFixture[str]) -> None:
     assert main(["rc", "--dry-run"], root=repo) == 0
     assert "1.0.1 -> 1.1.0rc1" in capsys.readouterr().out
-    assert str(current_version(repo)) == "1.0.1"
-    assert _git(repo, "tag", "--list") == ""
+    _unchanged(repo)
 
 
 def test_no_argument_shows_current(repo: Path, capsys: pytest.CaptureFixture[str]) -> None:
@@ -156,3 +219,13 @@ def test_release_refuses_an_existing_tag(repo: Path, capsys: pytest.CaptureFixtu
     assert main(["patch"], root=repo) == 1
     assert "already exists" in capsys.readouterr().err
     assert str(current_version(repo)) == "1.0.1"
+
+
+def test_dry_run_reports_blockers(repo: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    (repo / MANIFEST).write_text((repo / MANIFEST).read_text() + "\n")
+    _git(repo, "tag", "v1.0.2")
+    assert main(["patch", "--dry-run"], root=repo) == 0
+    out = capsys.readouterr().out
+    assert "Release v1.0.2" in out
+    assert "blocked: working tree has uncommitted changes" in out
+    assert "blocked: tag v1.0.2 already exists" in out

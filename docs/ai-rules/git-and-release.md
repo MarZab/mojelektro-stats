@@ -49,7 +49,7 @@ mise run release -- minor            # bump both files, commit, tag vX.Y.Z, ask 
 ```
 
 1. Add a `## X.Y.Z` section for the new version at the top of `CHANGELOG.md`, with a re-import note when stored statistics change. Commit it.
-2. `mise run release -- VERSION|KIND` needs a clean tree. It writes both version files, commits `chore: release vX.Y.Z`, creates an annotated tag, and asks before pushing the branch and tag (`--yes` skips the question). If you decline, it prints the `git push` command to run later.
+2. `mise run release -- VERSION|KIND` first prints its plan: the version change in both files, the commit `chore: release vX.Y.Z`, the annotated tag, the branch and remote it pushes to, and whether `release.yaml` will publish a full release or a pre-release. It also warns when `CHANGELOG.md` has no section for that version. It changes nothing until you confirm with `y`; `--yes` skips the question, and without a terminal it refuses unless `--yes` is given. It needs a clean tree and a new tag; `--dry-run` shows the plan, listing anything that would block it, and stops.
    KIND is `patch`, `minor`, `major`, `alpha`, `beta`, `rc` or `final`; an explicit version like `1.2.0` also works. It must be newer than the current one.
 3. CI does the rest:
    - `validate.yaml` runs `hacs/action` and `hassfest` on every push/PR and nightly.

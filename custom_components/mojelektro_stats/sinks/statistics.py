@@ -9,7 +9,9 @@ are removed and cumulative energy baselines stay correct.
 HA requires statistics timestamps at the top of the hour. Source readings are
 15-minute samples (KOLICINA — per-interval deltas) or 24-hour state (STANJE —
 cumulative meter total). Both need different handling:
-- Energy 15-min (A_/R_ KOLICINA): aggregate the 4 quarter-hour values into a
+- Energy 15-min (A_/R_ KOLICINA): readings are stamped at the end of their
+  slot, so each goes into the hour of `timestamp - 1 s`
+  (`_closing_hour_start`). Aggregate the 4 quarter-hour values into a
   single hourly delta, then accumulate forward from the last sum already
   stored in HA. (Without that baseline, each chunked batch restarts cumulative
   at 0 and HA reads the boundary as a negative-consumption meter reset.)
@@ -125,7 +127,7 @@ class StatisticsSink:
             value = _parse_value(r.get("value"))
             if value is None:
                 continue
-            hour = _closing_day_start(ts) if is_state else _truncate_to_hour(ts)
+            hour = _closing_day_start(ts) if is_state else _closing_hour_start(ts)
             hourly[hour].append(value)
 
         if not hourly:
@@ -244,8 +246,18 @@ class StatisticsSink:
         )
 
 
-def _truncate_to_hour(ts: datetime) -> datetime:
-    return ts.replace(minute=0, second=0, microsecond=0)
+def _closing_hour_start(ts: datetime) -> datetime:
+    """UTC start of the hour a 15-minute reading belongs to.
+
+    Interval readings are stamped at the *end* of their slot: 00:15 covers
+    00:00-00:15 and 01:00 covers 00:45-01:00. Taking the hour of
+    ``timestamp - 1 s`` keeps each slot in the hour (and day, and month) it
+    describes. Truncating the stamp itself would move every :00 slot into the
+    next hour, and at an API window boundary (windows return 00:15 of the first
+    day to 00:00 after the last) the two windows would share an hour, which
+    the overlap guard in `_resolve_baseline` then skipped, dropping readings.
+    """
+    return (ts - timedelta(seconds=1)).replace(minute=0, second=0, microsecond=0)
 
 
 def _closing_day_start(ts: datetime) -> datetime:

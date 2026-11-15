@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from datetime import UTC, date, datetime, time
+from datetime import UTC, date, datetime, time, timedelta
 from unittest.mock import AsyncMock, patch
 from zoneinfo import ZoneInfo
 
@@ -48,13 +48,31 @@ async def test_statistic_id_matches_ha_regex(
 
 
 def _four_quarter_readings(hour: datetime, values: list[float]) -> list[dict[str, str]]:
-    """Four 15-minute readings within a single hour."""
+    """The four 15-minute readings of one hour, stamped like the API does: at
+    the end of each slot (:15, :30, :45 and the next hour's :00)."""
     return [
         {
-            "timestamp": (hour.replace(minute=15 * i)).isoformat(),
+            "timestamp": (hour + timedelta(minutes=15 * (i + 1))).isoformat(),
             "value": str(v),
         }
         for i, v in enumerate(values)
+    ]
+
+
+def _api_window_readings(first: date, last: date, value: str) -> list[dict[str, str]]:
+    """15-minute readings exactly as one /meter-readings window returns them
+    for local days ``first``..``last``: from 00:15 on ``first`` to 00:00 after
+    ``last``, in Europe/Ljubljana time."""
+    tz = ZoneInfo("Europe/Ljubljana")
+    start = datetime.combine(first, time.min, tzinfo=tz).astimezone(UTC)
+    stop = datetime.combine(last + timedelta(days=1), time.min, tzinfo=tz).astimezone(UTC)
+    slots = int((stop - start) / timedelta(minutes=15))
+    return [
+        {
+            "timestamp": (start + timedelta(minutes=15 * (i + 1))).astimezone(tz).isoformat(),
+            "value": value,
+        }
+        for i in range(slots)
     ]
 
 
@@ -417,3 +435,43 @@ async def test_overlapping_chunk_boundary_does_not_double_count(
     assert len(captured[1]) == 1
     assert captured[1][0]["start"] == h1
     assert captured[1][0]["sum"] == pytest.approx(4.0)
+
+
+@pytest.mark.ha
+async def test_quarter_hours_stay_in_the_hour_they_describe(
+    recorder_mock: object, hass: object
+) -> None:
+    """A reading stamped 00:00 covers 23:45-24:00 of the previous day, so it
+    belongs to hour 23:00, and to the previous month at a month boundary."""
+    info = BY_NAME["A_PLUS_15MIN"]
+    readings = [
+        {"timestamp": "2026-10-31T23:45:00+01:00", "value": "0.1"},
+        {"timestamp": "2026-11-01T00:00:00+01:00", "value": "0.2"},  # 23:45-24:00 Oct 31
+        {"timestamp": "2026-11-01T00:15:00+01:00", "value": "0.4"},
+    ]
+    data = (await _write_stanje(hass, info, [readings], prior=(0.0, None)))[0]
+
+    oct31_2300 = datetime(2026, 10, 31, 22, 0, tzinfo=UTC)  # 23:00 CET
+    nov1_0000 = datetime(2026, 10, 31, 23, 0, tzinfo=UTC)  # 00:00 CET
+    assert [row["start"] for row in data] == [oct31_2300, nov1_0000]
+    assert [row["sum"] for row in data] == [pytest.approx(0.3), pytest.approx(0.7)]
+
+
+@pytest.mark.ha
+async def test_api_window_boundary_keeps_every_quarter_hour(
+    recorder_mock: object, hass: object
+) -> None:
+    """Regression: back-to-back /meter-readings windows (local days, 00:15 to
+    00:00) used to share their boundary hour, and the overlap guard dropped
+    the second window's first three quarter-hours."""
+    info = BY_NAME["A_PLUS_15MIN"]
+    chunk_a = _api_window_readings(date(2026, 10, 1), date(2026, 10, 2), "0.25")
+    chunk_b = _api_window_readings(date(2026, 10, 3), date(2026, 10, 4), "0.25")
+    captured = await _write_stanje(hass, info, [chunk_a, chunk_b], prior=(0.0, None))
+
+    rows = captured[0] + captured[1]
+    assert len(rows) == 4 * 24  # four full local days, one row per hour
+    starts = [row["start"] for row in rows]
+    assert len(set(starts)) == len(starts)
+    # Every slot of both windows is counted exactly once.
+    assert rows[-1]["sum"] == pytest.approx(0.25 * len(chunk_a + chunk_b))

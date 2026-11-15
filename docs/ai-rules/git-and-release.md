@@ -32,7 +32,7 @@ Scope is optional but useful: `feat(coordinator): ...`, `fix(cli): ...`, `chore(
 - SemVer.
 - Single source: `custom_components/mojelektro_stats/lib/mojelektro_api/__about__.py` (`__version__ = "X.Y.Z"`).
 - The integration's `manifest.json` `"version"` must always match the lib's `__about__.py`.
-- Bump both files together by hand: `__about__.py` (`__version__`) and `manifest.json` (`"version"`). Keep them in lockstep.
+- Bump both files together with `mise run release` (below), which keeps `__about__.py` (`__version__`) and `manifest.json` (`"version"`) in lockstep.
 
 Bump rules pre-1.0:
 - `0.x.0` for breaking changes (lib public surface, integration config schema).
@@ -42,12 +42,33 @@ Post-1.0: standard SemVer.
 
 ## Release flow
 
-1. Bump `__about__.py` + `manifest.json` to `X.Y.Z` and commit.
-2. Tag: `git tag vX.Y.Z && git push --tags`.
-3. CI does the rest:
+```bash
+mise run release                     # current version + channel
+mise run release -- minor --dry-run  # what it would do
+mise run release -- minor            # bump both files, commit, tag vX.Y.Z, ask to push
+```
+
+1. `mise run release -- VERSION|KIND` needs a clean tree. It writes both version files, commits `chore: release vX.Y.Z`, creates an annotated tag, and asks before pushing the branch and tag (`--yes` skips the question). If you decline, it prints the `git push` command to run later.
+   KIND is `patch`, `minor`, `major`, `alpha`, `beta`, `rc` or `final`; an explicit version like `1.2.0` also works. It must be newer than the current one.
+2. CI does the rest:
    - `validate.yaml` runs `hacs/action` and `hassfest` on every push/PR and nightly.
    - `release.yaml` checks the tag matches `manifest.json` and creates a full GitHub Release with auto-generated notes. (HACS default inclusion requires a real Release, not just a tag.)
-4. Users see the update in Home Assistant's Marketplace (2026.11+) or HACS (older).
+3. Users see the update in Home Assistant's Marketplace (2026.11+) or HACS (older).
+
+### Beta channel
+
+Pre-releases use Home Assistant's own PEP 440 style: `X.Y.ZbN` for betas, `X.Y.ZrcN` for release candidates (`aN` for alphas). Not SemVer `-beta.1`; `release.yaml` rejects that.
+
+```bash
+mise run release -- beta     # 1.0.1 -> 1.1.0b1 (from a stable version: next minor; --base patch|major)
+mise run release -- beta     # 1.1.0b1 -> 1.1.0b2
+mise run release -- rc       # 1.1.0b2 -> 1.1.0rc1
+mise run release -- final    # 1.1.0rc1 -> 1.1.0
+```
+
+`release.yaml` publishes `a`/`b`/`rc` tags as GitHub **pre-releases**. Stable `vX.Y.Z` tags are marked latest.
+
+HACS offers pre-releases only to users who opt in to beta versions for this repository (in HACS's repository options; the exact location varies between HACS versions). Everyone else stays on the latest stable release. Ordering is `1.0.1 < 1.1.0b1 < 1.1.0rc1 < 1.1.0`, so beta users move to the final release when it ships. To fix a bad beta, tag the next one (`b2`).
 
 ## HACS default catalog (Marketplace)
 

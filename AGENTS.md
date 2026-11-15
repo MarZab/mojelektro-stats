@@ -69,7 +69,7 @@ Tasks are scripts in `tools/tasks/` (`mise tasks` lists them).
 4. **All new code is typed.** `mypy --strict` and `pyright` must pass.
 5. **All new code has tests.** Lib → `tests/lib/`; integration → `tests/ha/`.
 6. **No live API calls in CI.** VCR cassettes or mocks only.
-7. **Version truth:** `custom_components/mojelektro_stats/lib/mojelektro_api/__about__.py` + matching `manifest.json` `"version"`. Bump both by hand, in lockstep.
+7. **Version truth:** `custom_components/mojelektro_stats/lib/mojelektro_api/__about__.py` + matching `manifest.json` `"version"`. Bump both in lockstep with `mise run release` (it refuses mismatched files).
 8. **Reading-type catalog** is hardcoded in `lib/mojelektro_api/reading_types.py`. Regenerate with `mise run regen-reading-types`.
 
 ## What not to do without checking with the human

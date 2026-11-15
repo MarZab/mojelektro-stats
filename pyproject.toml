@@ -64,6 +64,7 @@ strict = true
 files = [
   "custom_components/mojelektro_stats",
   "tools/cli",
+  "tools/scripts/release.py",
 ]
 explicit_package_bases = true
 namespace_packages = true
@@ -80,6 +81,7 @@ disable_error_code = ["misc", "attr-defined"]
 include = [
   "custom_components/mojelektro_stats",
   "tools/cli",
+  "tools/scripts/release.py",
 ]
 extraPaths = ["custom_components/mojelektro_stats/lib", "tools"]
 pythonVersion = "3.14"

@@ -34,6 +34,7 @@ mise run dev:down              # stop dev stack
 mise run regen-reading-types   # refresh lib/reading_types.py from cassette
 mise run clean                 # remove caches
 mise run sandbox -- plan       # sbx dev sandbox: plan | create | run | rm (tools/sandbox/run.sh)
+mise run release -- beta       # bump + commit + tag + push (see ai-rules/git-and-release.md)
 ```
 
 To add a task, drop an executable script in `tools/tasks/` with a `#MISE description="…"` header. Subdirectories become namespaces (`tools/tasks/dev/up` → `dev:up`, `test/_default` → `test`).
@@ -111,4 +112,4 @@ CI replays committed VCR cassettes — no live API calls. Re-recording procedure
 
 ## Releases (HACS)
 
-Version in `lib/mojelektro_api/__about__.py` and `manifest.json` — bump both by hand, in lockstep. See [`ai-rules/git-and-release.md`](ai-rules/git-and-release.md).
+Version in `lib/mojelektro_api/__about__.py` and `manifest.json`, kept in lockstep by `mise run release`. See [`ai-rules/git-and-release.md`](ai-rules/git-and-release.md).

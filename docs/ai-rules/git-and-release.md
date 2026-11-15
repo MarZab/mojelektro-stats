@@ -45,9 +45,13 @@ Post-1.0: standard SemVer.
 1. Bump `__about__.py` + `manifest.json` to `X.Y.Z` and commit.
 2. Tag: `git tag vX.Y.Z && git push --tags`.
 3. CI does the rest:
-   - Runs `hacs/action` to validate HACS structure.
-   - Creates a GitHub Release with auto-generated notes + the CHANGELOG entry.
-4. HACS users see the new version under their custom repository.
+   - `validate.yaml` runs `hacs/action` and `hassfest` on every push/PR and nightly.
+   - `release.yaml` checks the tag matches `manifest.json` and creates a full GitHub Release with auto-generated notes. (HACS default inclusion requires a real Release, not just a tag.)
+4. Users see the update in Home Assistant's Marketplace (2026.11+) or HACS (older).
+
+## HACS default catalog (Marketplace)
+
+The Marketplace in HA 2026.11+ still uses the [hacs/default](https://github.com/hacs/default) catalog. Inclusion checks: `hacs/action` + hassfest pass with no ignores, a full GitHub Release exists, an OSI `LICENSE`, `custom_components/mojelektro_stats/brand/icon.png`, repo description + topics + issues enabled, and `hacs.json` `country: "SI"` (Slovenia-only service). Don't break these.
 
 If a release is bad: tag a fix release (`X.Y.Z+1`). Do not delete or move tags.
 

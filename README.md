@@ -20,12 +20,14 @@ Home Assistant integration for [Moj Elektro](https://mojelektro.si) electricity 
 
 Get an API token at [mojelektro.si](https://mojelektro.si) (Account → API).
 
-## Install (HACS)
+## Install (Marketplace / HACS)
 
-1. Add this repository as a [custom HACS repository](https://hacs.xyz/docs/faq/custom_repositories/) (category: **Integration**).
-2. Install **Moj Elektro** from HACS.
-3. Restart Home Assistant.
-4. Add the integration via **Settings → Devices & Services → Add Integration → Moj Elektro**.
+Home Assistant 2026.11+ ships HACS built in as **Marketplace**.
+
+1. **Settings → Marketplace** → ⋮ → **Custom repositories**, add `https://github.com/MarZab/mojelektro-stats` (category: **Integration**).
+   On Home Assistant 2026.10 or older, do the same from HACS → ⋮ → **Custom repositories**.
+2. Install **Moj Elektro** and restart Home Assistant.
+3. Add the integration via **Settings → Devices & Services → Add Integration → Moj Elektro**.
 
 Manual install: copy `custom_components/mojelektro_stats/` into your HA `config/custom_components/` directory and restart. The integration bundles its own typed API client under `lib/` — nothing else to install.
 
@@ -48,3 +50,7 @@ The integration writes its data as Home Assistant **long-term statistics** (stat
 ## Development
 
 Contributors: see [`docs/development.md`](docs/development.md) for `uv sync`, `mise run check`, the local CLI, Docker dev stack, and cassette recording. AI-agent rules: [`AGENTS.md`](AGENTS.md).
+
+## License
+
+[MIT](LICENSE). Not affiliated with or endorsed by Moj Elektro or the Slovenian electricity distribution companies.

@@ -1,13 +1,17 @@
 {
   "domain": "mojelektro_stats",
   "name": "Moj Elektro",
-  "version": "1.0.0",
+  "codeowners": [
+    "@marzab"
+  ],
   "config_flow": true,
-  "codeowners": ["@marzab"],
+  "dependencies": [
+    "recorder"
+  ],
   "documentation": "https://github.com/marzab/mojelektro-stats",
+  "integration_type": "service",
+  "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/marzab/mojelektro-stats/issues",
   "requirements": [],
-  "iot_class": "cloud_polling",
-  "integration_type": "service",
-  "dependencies": ["recorder"]
+  "version": "1.0.0"
 }

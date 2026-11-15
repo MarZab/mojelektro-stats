@@ -2,7 +2,7 @@
 
 All notable changes to the Moj Elektro Stats integration. Versions follow [SemVer](https://semver.org); pre-releases (`X.Y.ZbN`, `X.Y.ZrcN`) go to the HACS beta channel.
 
-## 1.0.1
+## 1.1.0
 
 ### Fixed
 

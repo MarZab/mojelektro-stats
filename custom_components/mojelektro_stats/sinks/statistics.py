@@ -29,6 +29,7 @@ from datetime import date, datetime, time, timedelta
 from typing import Final
 from zoneinfo import ZoneInfo
 
+from homeassistant.components.recorder.core import Recorder
 from homeassistant.components.recorder.db_schema import Statistics, StatisticsMeta
 from homeassistant.components.recorder.models import (
     StatisticData,
@@ -38,12 +39,20 @@ from homeassistant.components.recorder.models import (
 from homeassistant.components.recorder.statistics import (
     async_add_external_statistics,
 )
-from homeassistant.components.recorder.util import get_instance, session_scope
+
+# Re-exported from recorder.util on every supported HA version (2025.4+); the
+# newer homeassistant.helpers.recorder home isn't guaranteed that far back.
+from homeassistant.components.recorder.util import (
+    get_instance,  # pyright: ignore[reportPrivateImportUsage]
+    session_scope,  # pyright: ignore[reportPrivateImportUsage]
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.util import dt as dt_util
 from sqlalchemy import delete, select
 
-from custom_components.mojelektro_stats import _bootstrap  # noqa: F401
+from custom_components.mojelektro_stats import (
+    _bootstrap,  # noqa: F401  # pyright: ignore[reportUnusedImport]
+)
 from custom_components.mojelektro_stats._naming import (
     slug_reading_type,
     slug_usage_point,
@@ -145,9 +154,7 @@ class StatisticsSink:
                 # `async_add_external_statistics` is async-queued, so during
                 # a single coordinator cycle the just-written rows may not be
                 # in the DB yet; the cache above is the fast path.
-                baseline, skip_through = await self._previous_sum_before(
-                    statistic_id, first_hour
-                )
+                baseline, skip_through = await self._previous_sum_before(statistic_id, first_hour)
 
         if skip_through is not None:
             hourly = {hour: values for hour, values in hourly.items() if hour > skip_through}
@@ -278,7 +285,7 @@ def _window_to_datetimes(window: tuple[date, date]) -> tuple[datetime, datetime]
 
 
 def _delete_statistics_in_window(
-    instance: object,
+    instance: Recorder,
     statistic_id: str,
     window_start: datetime,
     window_stop: datetime,
@@ -302,7 +309,7 @@ def _delete_statistics_in_window(
 
 
 def _sum_before_first_hour(
-    instance: object,
+    instance: Recorder,
     statistic_id: str,
     first_hour: datetime,
 ) -> tuple[float, datetime | None]:
@@ -346,5 +353,3 @@ def _parse_value(value: str | None) -> float | None:
         return float(value)
     except (TypeError, ValueError):
         return None
-
-

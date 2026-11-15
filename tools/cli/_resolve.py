@@ -12,6 +12,7 @@ asked for and return it as-is (no API call).
 from __future__ import annotations
 
 import re
+from typing import cast
 
 import typer
 
@@ -31,7 +32,7 @@ def _pluck(payload: object, *path: str) -> object | None:
     for key in path:
         if not isinstance(cur, dict):
             return None
-        cur = cur.get(key)
+        cur = cast(dict[str, object], cur).get(key)
     return cur
 
 
@@ -67,8 +68,8 @@ async def resolve_gsrn_mt(client: MojElektroClient, identifier: str) -> str:
             f"merilno mesto {identifier!r} has no associated merilne tocke",
             param_hint="GSRN",
         )
-    first = points[0]
-    gsrn = first.get("gsrn") if isinstance(first, dict) else None
+    first = cast(list[object], points)[0]
+    gsrn = cast(dict[str, object], first).get("gsrn") if isinstance(first, dict) else None
     if not isinstance(gsrn, str) or not gsrn:
         raise typer.BadParameter(
             f"could not resolve identifikator {identifier!r} to a contract GSRN (gsrnMt)",

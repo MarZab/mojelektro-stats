@@ -16,7 +16,9 @@ from collections.abc import Mapping
 from datetime import date
 from typing import Final
 
-from custom_components.mojelektro_stats import _bootstrap  # noqa: F401
+from custom_components.mojelektro_stats import (
+    _bootstrap,  # noqa: F401  # pyright: ignore[reportUnusedImport]
+)
 from custom_components.mojelektro_stats.sinks import Sink
 from mojelektro_api import BY_RAW_CODE, MeterReadings
 

@@ -19,13 +19,15 @@ from __future__ import annotations
 
 import logging
 from datetime import date, datetime, time
-from typing import Final
+from typing import Final, cast
 
 import httpx
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.util import dt as dt_util
 
-from custom_components.mojelektro_stats import _bootstrap  # noqa: F401
+from custom_components.mojelektro_stats import (
+    _bootstrap,  # noqa: F401  # pyright: ignore[reportUnusedImport]
+)
 from custom_components.mojelektro_stats._naming import unit
 from custom_components.mojelektro_stats.const import INFLUXDB_V1, INFLUXDB_V2
 from mojelektro_api import IntervalReading, ReadingTypeInfo
@@ -74,7 +76,7 @@ async def probe_influxdb_connection(
         await _ensure_v1_database_exists(http, base=base, bucket=bucket, token=token)
     flux = (
         f'from(bucket: "{_escape_flux_string(bucket)}")\n'
-        f'  |> range(start: 1970-01-01T00:00:00Z)\n'
+        f"  |> range(start: 1970-01-01T00:00:00Z)\n"
         f'  |> filter(fn: (r) => r._measurement == "{_MEASUREMENT}")\n'
         "  |> count()"
     )
@@ -133,14 +135,21 @@ async def _ensure_v1_database_exists(
 def _parse_show_databases(payload: object) -> set[str]:
     """Pull database names out of a `SHOW DATABASES` InfluxQL JSON response."""
     names: set[str] = set()
-    if not isinstance(payload, dict):
-        return names
-    for result in payload.get("results", []) or []:
-        for series in result.get("series", []) or []:
-            for row in series.get("values", []) or []:
-                if row and isinstance(row[0], str):
-                    names.add(row[0])
+    for result in _json_list(_json_dict(payload).get("results")):
+        for series in _json_list(_json_dict(result).get("series")):
+            for row in _json_list(_json_dict(series).get("values")):
+                values = _json_list(row)
+                if values and isinstance(values[0], str):
+                    names.add(values[0])
     return names
+
+
+def _json_dict(value: object) -> dict[str, object]:
+    return cast(dict[str, object], value) if isinstance(value, dict) else {}
+
+
+def _json_list(value: object) -> list[object]:
+    return cast(list[object], value) if isinstance(value, list) else []
 
 
 def _parse_flux_count_csv(body: str) -> int:

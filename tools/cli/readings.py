@@ -153,7 +153,7 @@ async def _run_batch(
     async with client:
         gsrn = await resolve_gsrn_mm(client, usage_point)
         out = await client.get_meter_readings(gsrn, start_d, end_d, options=options)
-    typer.echo(dump_readings(dict(out), fmt))
+    typer.echo(dump_readings(out, fmt))
 
 
 async def _run_interactive(
@@ -202,9 +202,7 @@ async def _walk_windows(
     columns: list[str] | None = None
     widths: list[int] = []
     while True:
-        payload = dict(
-            await client.get_meter_readings(gsrn, window_start, window_end, options=options)
-        )
+        payload = await client.get_meter_readings(gsrn, window_start, window_end, options=options)
         pivot_cols, pivot_rows = pivot_readings(payload)
 
         if columns is None:

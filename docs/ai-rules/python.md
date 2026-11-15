@@ -4,7 +4,7 @@ Apply to all Python in this repo. The **product** is the HACS integration; `tool
 
 ## Version
 
-Python 3.12 minimum. Use 3.12+ syntax (`type X = ...`, `X | None`, `Self`).
+Python 3.14, the version the latest Home Assistant requires (pinned in `.python-version`; CI uses it too). Use modern syntax (`type X = ...`, `X | None`, `Self`).
 
 ## Tooling
 

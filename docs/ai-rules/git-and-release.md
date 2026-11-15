@@ -48,12 +48,13 @@ mise run release -- minor --dry-run  # what it would do
 mise run release -- minor            # bump both files, commit, tag vX.Y.Z, ask to push
 ```
 
-1. `mise run release -- VERSION|KIND` needs a clean tree. It writes both version files, commits `chore: release vX.Y.Z`, creates an annotated tag, and asks before pushing the branch and tag (`--yes` skips the question). If you decline, it prints the `git push` command to run later.
+1. Add a `## X.Y.Z` section for the new version at the top of `CHANGELOG.md`, with a re-import note when stored statistics change. Commit it.
+2. `mise run release -- VERSION|KIND` needs a clean tree. It writes both version files, commits `chore: release vX.Y.Z`, creates an annotated tag, and asks before pushing the branch and tag (`--yes` skips the question). If you decline, it prints the `git push` command to run later.
    KIND is `patch`, `minor`, `major`, `alpha`, `beta`, `rc` or `final`; an explicit version like `1.2.0` also works. It must be newer than the current one.
-2. CI does the rest:
+3. CI does the rest:
    - `validate.yaml` runs `hacs/action` and `hassfest` on every push/PR and nightly.
    - `release.yaml` checks the tag matches `manifest.json` and creates a full GitHub Release with auto-generated notes. (HACS default inclusion requires a real Release, not just a tag.)
-3. Users see the update in Home Assistant's Marketplace (2026.11+) or HACS (older).
+4. Users see the update in Home Assistant's Marketplace (2026.11+) or HACS (older).
 
 ### Beta channel
 

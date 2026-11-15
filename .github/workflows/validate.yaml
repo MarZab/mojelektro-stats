@@ -18,6 +18,10 @@ jobs:
       - uses: hacs/action@main
         with:
           category: integration
+          # HACS reads the license GitHub detects on the default branch, so on a
+          # PR it can't see LICENSE until merge. Pushes to main and the nightly
+          # run still enforce it.
+          ignore: ${{ github.event_name == 'pull_request' && 'license' || '' }}
 
   hassfest:
     name: Hassfest validation

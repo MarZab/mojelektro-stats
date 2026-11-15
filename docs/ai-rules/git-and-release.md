@@ -73,7 +73,7 @@ HACS offers pre-releases only to users who opt in to beta versions for this repo
 
 ## HACS default catalog (Marketplace)
 
-The Marketplace in HA 2026.11+ still uses the [hacs/default](https://github.com/hacs/default) catalog. Inclusion checks: `hacs/action` + hassfest pass with no ignores, a full GitHub Release exists, an OSI `LICENSE`, `custom_components/mojelektro_stats/brand/icon.png`, repo description + topics + issues enabled, and `hacs.json` `country: "SI"` (Slovenia-only service). Don't break these.
+The Marketplace in HA 2026.11+ still uses the [hacs/default](https://github.com/hacs/default) catalog. Inclusion checks: `hacs/action` + hassfest pass with no ignores (`validate.yaml` skips only the `license` check, and only on pull requests, because HACS reads the license from the default branch), a full GitHub Release exists, an OSI `LICENSE`, `custom_components/mojelektro_stats/brand/icon.png`, repo description + topics + issues enabled, and `hacs.json` `country: "SI"` (Slovenia-only service). Don't break these.
 
 If a release is bad: tag a fix release (`X.Y.Z+1`). Do not delete or move tags.
 

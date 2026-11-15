@@ -1,6 +1,9 @@
 {
   "domain": "mojelektro_stats",
   "name": "Moj Elektro",
+  "categories": [
+    "energy.meters_monitoring"
+  ],
   "codeowners": [
     "@marzab"
   ],

@@ -5,11 +5,15 @@ import asyncio
 import typer
 
 from cli._client import build_client
+from cli._env import USAGE_POINT_ENVVAR
 from cli._format import OutputFormat, dump
 from cli._resolve import resolve_gsrn_mt
 
 
-def info_cmd(ctx: typer.Context, identifikator: str) -> None:
+def info_cmd(
+    ctx: typer.Context,
+    identifikator: str = typer.Argument(..., envvar=USAGE_POINT_ENVVAR),
+) -> None:
     """Show merilno mesto (technical details)."""
 
     async def _run() -> dict[str, object]:
@@ -20,7 +24,10 @@ def info_cmd(ctx: typer.Context, identifikator: str) -> None:
     typer.echo(dump(asyncio.run(_run()), OutputFormat(ctx.obj["format"])))
 
 
-def contract_cmd(ctx: typer.Context, identifier: str) -> None:
+def contract_cmd(
+    ctx: typer.Context,
+    identifier: str = typer.Argument(..., envvar=USAGE_POINT_ENVVAR),
+) -> None:
     """Show merilna tocka (contractual details)."""
 
     async def _run() -> dict[str, object]:

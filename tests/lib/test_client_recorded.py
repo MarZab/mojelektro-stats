@@ -26,9 +26,9 @@ async def test_recorded_reading_types(mojelektro_token: str) -> None:
 
     The lib's runtime client no longer exposes this endpoint (the catalog is
     hardcoded in `custom_components/mojelektro_stats/lib/mojelektro_api/reading_types.py`).
-    `scripts/regen-reading-types.py` reads the cassette produced by this test;
+    `tools/scripts/regen-reading-types.py` reads the cassette produced by this test;
     re-record (`--record-mode=once`) after the upstream catalog grows or the
-    path-aware scrub changes, then run `make regen-reading-types`.
+    path-aware scrub changes, then run `mise run regen-reading-types`.
     """
     async with httpx.AsyncClient(
         base_url=Server.PRODUCTION.base_url,

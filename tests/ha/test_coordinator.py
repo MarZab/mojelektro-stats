@@ -233,9 +233,7 @@ async def test_async_backfill_from_passes_replace_window_per_chunk(
     requests = await coord.async_backfill_from(start)
     assert requests == 3
     assert dispatcher.dispatch.await_count == 3
-    windows = [
-        call.kwargs["replace_window"] for call in dispatcher.dispatch.await_args_list
-    ]
+    windows = [call.kwargs["replace_window"] for call in dispatcher.dispatch.await_args_list]
     assert windows == [
         (date(2026, 3, 1), date(2026, 4, 5)),
         (date(2026, 4, 5), date(2026, 5, 10)),

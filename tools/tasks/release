@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+#MISE description="Show the version, or bump + commit + tag + push a release (mise run release -- beta|rc|final|minor|1.1.0b1)"
+set -euo pipefail
+exec uv run python tools/scripts/release.py "$@"

@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+#MISE description="Start the dev stack (HA :8123, InfluxDB :8086)"
+set -euo pipefail
+exec docker compose -f docker/compose.yaml up -d "$@"

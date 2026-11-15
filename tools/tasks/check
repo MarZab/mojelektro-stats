@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+#MISE description="Full check: lint, types and tests (what CI runs)"
+#MISE depends=["lint", "type"]
+set -euo pipefail
+uv run pytest "$@"

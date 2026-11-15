@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+#MISE description="Stop the dev stack"
+set -euo pipefail
+exec docker compose -f docker/compose.yaml down "$@"

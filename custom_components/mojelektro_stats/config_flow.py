@@ -1,4 +1,4 @@
-"""ConfigFlow + OptionsFlow for the Moj Elektro integration.
+"""ConfigFlow + OptionsFlow for the Moj Elektro Stats integration.
 
 One config entry pairs one Moj Elektro token (a single "Storitev" / service
 account) with exactly one merilno mesto. The API permits more than one meter
@@ -36,19 +36,22 @@ from homeassistant import config_entries
 from homeassistant.config_entries import ConfigFlowResult
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.selector import (
-    BooleanSelector,
-    DateSelector,
+    BooleanSelector,  # pyright: ignore[reportUnknownVariableType]
+    DateSelector,  # pyright: ignore[reportUnknownVariableType]
     SelectOptionDict,
-    SelectSelector,
+    Selector,
+    SelectSelector,  # pyright: ignore[reportUnknownVariableType]
     SelectSelectorConfig,
     SelectSelectorMode,
-    TextSelector,
+    TextSelector,  # pyright: ignore[reportUnknownVariableType]
     TextSelectorConfig,
     TextSelectorType,
-    TimeSelector,
+    TimeSelector,  # pyright: ignore[reportUnknownVariableType]
 )
 
-from custom_components.mojelektro_stats import _bootstrap  # noqa: F401
+from custom_components.mojelektro_stats import (
+    _bootstrap,  # noqa: F401  # pyright: ignore[reportUnusedImport]
+)
 from custom_components.mojelektro_stats.const import (
     CONF_BACKFILL_FROM,
     CONF_IDENTIFIKATOR,
@@ -103,36 +106,44 @@ if TYPE_CHECKING:
     from homeassistant.config_entries import ConfigEntry
 
 
+# HA registers selector classes through a decorator that erases them to
+# Selector[Unknown]; cast the constants so pyright can follow them.
 # Multi-select per reading type: 0, 1, or both of "Statistics" / "InfluxDB".
 # LIST mode renders the two options as checkbox-toggles below the row's label.
-_SINK_SELECTOR = SelectSelector(
-    SelectSelectorConfig(
-        mode=SelectSelectorMode.LIST,
-        multiple=True,
-        translation_key="sink",
-        options=[SelectOptionDict(value=v, label=v) for v in SINK_OPTIONS],
-    )
+_SINK_SELECTOR = cast(
+    Selector[Any],
+    SelectSelector(
+        SelectSelectorConfig(
+            mode=SelectSelectorMode.LIST,
+            multiple=True,
+            translation_key="sink",
+            options=[SelectOptionDict(value=v, label=v) for v in SINK_OPTIONS],
+        )
+    ),
 )
-_DATE_SELECTOR = DateSelector()
-_TIME_SELECTOR = TimeSelector()
-_BOOL_SELECTOR = BooleanSelector()
-_PASSWORD_SELECTOR = TextSelector(TextSelectorConfig(type=TextSelectorType.PASSWORD))
+_DATE_SELECTOR = cast(Selector[Any], DateSelector())
+_TIME_SELECTOR = cast(Selector[Any], TimeSelector())
+_BOOL_SELECTOR = cast(Selector[Any], BooleanSelector())
+_PASSWORD_SELECTOR = cast(
+    Selector[Any], TextSelector(TextSelectorConfig(type=TextSelectorType.PASSWORD))
+)
 
 # Radio toggle on the first InfluxDB step. v2 is the default (cloud / OSS 2.x);
 # v1 targets the Home Assistant InfluxDB 1.8 add-on via its v2-compat API.
 # Labels are set explicitly (no translation_key) so the radios always render
 # readable text even if HA's translation cache is stale — and InfluxDB version
 # names aren't worth translating anyway.
-_INFLUXDB_VERSION_SELECTOR = SelectSelector(
-    SelectSelectorConfig(
-        mode=SelectSelectorMode.LIST,
-        options=[
-            SelectOptionDict(value=INFLUXDB_V2, label="InfluxDB 2.x / Cloud"),
-            SelectOptionDict(
-                value=INFLUXDB_V1, label="InfluxDB 1.x (Home Assistant add-on)"
-            ),
-        ],
-    )
+_INFLUXDB_VERSION_SELECTOR = cast(
+    Selector[Any],
+    SelectSelector(
+        SelectSelectorConfig(
+            mode=SelectSelectorMode.LIST,
+            options=[
+                SelectOptionDict(value=INFLUXDB_V2, label="InfluxDB 2.x / Cloud"),
+                SelectOptionDict(value=INFLUXDB_V1, label="InfluxDB 1.x (Home Assistant add-on)"),
+            ],
+        )
+    ),
 )
 
 # Defaults for the v1 form, matching a stock Home Assistant InfluxDB add-on.
@@ -221,7 +232,7 @@ class _FlowStepsMixin:
     _data: dict[str, Any]
     _pending_point: dict[str, Any]
     _editing_index: int | None
-    _influxdb_point_count: int | None
+    influxdb_point_count: int | None
 
     if TYPE_CHECKING:
         hass: HomeAssistant
@@ -345,7 +356,7 @@ class _FlowStepsMixin:
                     CONF_INFLUXDB_API_VERSION: INFLUXDB_V2,
                     **user_input,
                 }
-                self._influxdb_point_count = count
+                self.influxdb_point_count = count
                 return self._finish()
         return self.async_show_form(
             step_id="influxdb_config",
@@ -401,7 +412,7 @@ class _FlowStepsMixin:
                 errors["base"] = "unknown_influx"
             else:
                 self._data[CONF_INFLUXDB] = composed
-                self._influxdb_point_count = count
+                self.influxdb_point_count = count
                 return self._finish()
         return self.async_show_form(
             step_id="influxdb_config_v1",
@@ -443,8 +454,8 @@ def _create_entry_result(
     data: Mapping[str, Any],
     options: Mapping[str, Any] | None = None,
 ) -> ConfigFlowResult:
-    count = flow._influxdb_point_count
-    flow._influxdb_point_count = None
+    count = flow.influxdb_point_count
+    flow.influxdb_point_count = None
     kwargs: dict[str, Any] = {"title": title, "data": data}
     if options is not None:
         kwargs["options"] = options
@@ -463,7 +474,7 @@ class MojElektroConfigFlow(_FlowStepsMixin, config_entries.ConfigFlow, domain=DO
         self._data = {}
         self._pending_point = {}
         self._editing_index = None
-        self._influxdb_point_count = None
+        self.influxdb_point_count = None
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         if user_input is not None:
@@ -505,8 +516,8 @@ class MojElektroConfigFlow(_FlowStepsMixin, config_entries.ConfigFlow, domain=DO
 
     @staticmethod
     @callback
-    def async_get_options_flow(entry: ConfigEntry) -> MojElektroOptionsFlow:
-        return MojElektroOptionsFlow(entry)
+    def async_get_options_flow(config_entry: ConfigEntry) -> MojElektroOptionsFlow:
+        return MojElektroOptionsFlow(config_entry)
 
 
 class MojElektroOptionsFlow(_FlowStepsMixin, config_entries.OptionsFlow):
@@ -516,7 +527,7 @@ class MojElektroOptionsFlow(_FlowStepsMixin, config_entries.OptionsFlow):
         self._data[CONF_USAGE_POINTS] = [dict(up) for up in self._data.get(CONF_USAGE_POINTS, [])]
         self._pending_point = {}
         self._editing_index = None
-        self._influxdb_point_count = None
+        self.influxdb_point_count = None
 
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         # No usage point yet (interrupted setup) — re-add one.
@@ -600,13 +611,13 @@ def _entry_title(data: Mapping[str, Any]) -> str:
     never returns empty since HA renders the title in the Devices & Services
     list and an empty string looks broken.
     """
-    points = data.get(CONF_USAGE_POINTS) or []
+    points: list[Mapping[str, Any]] = data.get(CONF_USAGE_POINTS) or []
     if points:
         first = points[0]
         candidate = first.get(CONF_NAZIV) or first.get(CONF_IDENTIFIKATOR)
         if candidate:
             return str(candidate)
-    return "Moj Elektro"
+    return "Moj Elektro Stats"
 
 
 def _read_env_influxdb() -> dict[str, str] | None:
@@ -655,9 +666,7 @@ def _parse_date(value: str | date) -> date | None:
         return None
 
 
-async def _validate_influxdb(
-    hass: HomeAssistant, config: Mapping[str, str]
-) -> int:
+async def _validate_influxdb(hass: HomeAssistant, config: Mapping[str, str]) -> int:
     """Probe InfluxDB and return how many ``mojelektro`` points already exist."""
     http = await hass.async_add_executor_job(httpx.AsyncClient)
     try:

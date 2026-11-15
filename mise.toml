@@ -1,0 +1,18 @@
+# Developer tooling for the Moj Elektro Stats HACS integration.
+#
+#   mise install        # Python + uv at the pinned versions
+#   mise run setup      # uv sync (dev dependencies into .venv)
+#   mise tasks          # list everything
+#
+# Tasks are executable scripts under tools/tasks/ — one file per task,
+# directories become namespaces (tools/tasks/dev/up -> `mise run dev:up`).
+
+[tools]
+python = "3.14"
+uv = "latest"
+
+[shell_alias]
+mr = "mise run"
+
+[task_config]
+includes = ["tools/tasks", "tools/sandbox"]

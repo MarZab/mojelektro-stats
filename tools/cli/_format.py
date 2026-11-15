@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import json
 from enum import StrEnum
-from typing import Any
+from typing import Any, cast
 
 import yaml
 
+from mojelektro_api.models import MeterReadings
 from mojelektro_api.reading_types import BY_RAW_CODE
 
 
@@ -28,11 +29,15 @@ def dump(payload: Any, fmt: OutputFormat) -> str:
     if isinstance(payload, dict):
         # Flatten to dot-path leaf rows so nested objects/arrays don't end up
         # as `{'k': 'v', …}` blobs in a single cell.
-        pairs = flatten_to_pairs(payload)
+        pairs = flatten_to_pairs(cast(dict[str, object], payload))
         string_rows = [[k, v] for k, v in pairs]
         return _render_columns(["key", "value"], string_rows)
+    rows: list[dict[str, object]]
     if isinstance(payload, list):
-        rows = [item if isinstance(item, dict) else {"value": item} for item in payload]
+        rows = [
+            cast(dict[str, object], item) if isinstance(item, dict) else {"value": item}
+            for item in cast(list[object], payload)
+        ]
     else:
         rows = [{"value": payload}]
     if not rows:
@@ -42,7 +47,7 @@ def dump(payload: Any, fmt: OutputFormat) -> str:
     return _render_columns(columns, string_rows)
 
 
-def flatten_to_pairs(payload: Any, prefix: str = "") -> list[tuple[str, str]]:
+def flatten_to_pairs(payload: object, prefix: str = "") -> list[tuple[str, str]]:
     """Walk a JSON-like value into (dot-path, stringified-leaf) pairs.
 
     - Dict children extend the path as `parent.child`.
@@ -54,7 +59,7 @@ def flatten_to_pairs(payload: Any, prefix: str = "") -> list[tuple[str, str]]:
         if not payload:
             return [(prefix, "{}")]
         pairs: list[tuple[str, str]] = []
-        for k, v in payload.items():
+        for k, v in cast(dict[object, object], payload).items():
             child_prefix = f"{prefix}.{k}" if prefix else str(k)
             pairs.extend(flatten_to_pairs(v, child_prefix))
         return pairs
@@ -62,7 +67,7 @@ def flatten_to_pairs(payload: Any, prefix: str = "") -> list[tuple[str, str]]:
         if not payload:
             return [(prefix, "[]")]
         pairs = []
-        for i, v in enumerate(payload):
+        for i, v in enumerate(cast(list[object], payload)):
             child_prefix = f"{prefix}.{i}" if prefix else str(i)
             pairs.extend(flatten_to_pairs(v, child_prefix))
         return pairs
@@ -104,7 +109,7 @@ def format_row(cells: list[str], widths: list[int]) -> str:
     return _COL_GUTTER.join(parts).rstrip()
 
 
-def pivot_readings(meter_readings: dict[str, Any]) -> tuple[list[str], list[dict[str, str]]]:
+def pivot_readings(meter_readings: MeterReadings) -> tuple[list[str], list[dict[str, str]]]:
     """Pivot a /meter-readings response into (column_names, rows).
 
     - Columns: one per requested reading type, labelled by `oznaka` when the
@@ -136,7 +141,7 @@ def pivot_readings(meter_readings: dict[str, Any]) -> tuple[list[str], list[dict
     return ["timestamp", *columns], rows
 
 
-def dump_readings(meter_readings: dict[str, Any], fmt: OutputFormat) -> str:
+def dump_readings(meter_readings: MeterReadings, fmt: OutputFormat) -> str:
     """Format a /meter-readings response.
 
     `table` produces a pivot (timestamp rows by reading-type columns).

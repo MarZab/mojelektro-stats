@@ -16,7 +16,9 @@ from collections.abc import Mapping
 from datetime import date
 from typing import Final
 
-from custom_components.mojelektro_stats import _bootstrap  # noqa: F401
+from custom_components.mojelektro_stats import (
+    _bootstrap,  # noqa: F401  # pyright: ignore[reportUnusedImport]
+)
 from custom_components.mojelektro_stats.sinks import Sink
 from mojelektro_api import BY_RAW_CODE, MeterReadings
 
@@ -41,7 +43,7 @@ class Dispatcher:
             if info is None:
                 _LOGGER.debug(
                     "Unknown reading type %r for usage point %s; "
-                    "consider running `make regen-reading-types`",
+                    "consider running `mise run regen-reading-types`",
                     raw_code,
                     usage_point,
                 )

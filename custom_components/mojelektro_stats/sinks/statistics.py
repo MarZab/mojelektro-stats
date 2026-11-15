@@ -9,12 +9,16 @@ are removed and cumulative energy baselines stay correct.
 HA requires statistics timestamps at the top of the hour. Source readings are
 15-minute samples (KOLICINA — per-interval deltas) or 24-hour state (STANJE —
 cumulative meter total). Both need different handling:
-- Energy 15-min (A_/R_ KOLICINA): aggregate the 4 quarter-hour values into a
+- Energy 15-min (A_/R_ KOLICINA): readings are stamped at the end of their
+  slot, so each goes into the hour of `timestamp - 1 s`
+  (`_closing_hour_start`). Aggregate the 4 quarter-hour values into a
   single hourly delta, then accumulate forward from the last sum already
   stored in HA. (Without that baseline, each chunked batch restarts cumulative
   at 0 and HA reads the boundary as a negative-consumption meter reset.)
 - Energy daily (A_/R_ STANJE): each value is already the cumulative meter
-  total; `sum = value` directly, no accumulation.
+  total; `sum = value` directly, no accumulation. The row is placed at the
+  Europe/Ljubljana midnight that starts the day the reading closes (see
+  `_closing_day_start`).
 - Power (P_/Q_): instantaneous, not cumulative — report mean/min/max across
   the 4 fifteen-minute samples instead of a running sum.
 """
@@ -23,9 +27,11 @@ from __future__ import annotations
 
 import logging
 from collections import defaultdict
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timedelta
 from typing import Final
+from zoneinfo import ZoneInfo
 
+from homeassistant.components.recorder.core import Recorder
 from homeassistant.components.recorder.db_schema import Statistics, StatisticsMeta
 from homeassistant.components.recorder.models import (
     StatisticData,
@@ -35,12 +41,14 @@ from homeassistant.components.recorder.models import (
 from homeassistant.components.recorder.statistics import (
     async_add_external_statistics,
 )
-from homeassistant.components.recorder.util import get_instance, session_scope
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.recorder import get_instance, session_scope
 from homeassistant.util import dt as dt_util
 from sqlalchemy import delete, select
 
-from custom_components.mojelektro_stats import _bootstrap  # noqa: F401
+from custom_components.mojelektro_stats import (
+    _bootstrap,  # noqa: F401  # pyright: ignore[reportUnusedImport]
+)
 from custom_components.mojelektro_stats._naming import (
     slug_reading_type,
     slug_usage_point,
@@ -52,6 +60,9 @@ from mojelektro_api import IntervalReading, ReadingTypeInfo
 
 _LOGGER: Final = logging.getLogger(__name__)
 _VRSTA_STATE: Final = "STANJE"
+# Moj Elektro day boundaries are Slovenian local time, whatever HA's own
+# time zone is set to.
+_METER_TZ: Final = ZoneInfo("Europe/Ljubljana")
 
 
 class StatisticsSink:
@@ -116,7 +127,8 @@ class StatisticsSink:
             value = _parse_value(r.get("value"))
             if value is None:
                 continue
-            hourly[_truncate_to_hour(ts)].append(value)
+            hour = _closing_day_start(ts) if is_state else _closing_hour_start(ts)
+            hourly[hour].append(value)
 
         if not hourly:
             return
@@ -124,6 +136,11 @@ class StatisticsSink:
         first_hour = min(hourly)
         baseline = 0.0
         skip_through: datetime | None = None
+        if is_state and statistic_id not in self._tail:
+            _, prior_hour = await self._previous_sum_before(statistic_id, first_hour)
+            if prior_hour is None:
+                hourly[_previous_day_start(first_hour)] = list(hourly[first_hour])
+                first_hour = min(hourly)
         if has_sum and not is_state:
             from_cache, skip_through = self._resolve_baseline(statistic_id, first_hour)
             if from_cache is not None:
@@ -133,9 +150,7 @@ class StatisticsSink:
                 # `async_add_external_statistics` is async-queued, so during
                 # a single coordinator cycle the just-written rows may not be
                 # in the DB yet; the cache above is the fast path.
-                baseline, skip_through = await self._previous_sum_before(
-                    statistic_id, first_hour
-                )
+                baseline, skip_through = await self._previous_sum_before(statistic_id, first_hour)
 
         if skip_through is not None:
             hourly = {hour: values for hour, values in hourly.items() if hour > skip_through}
@@ -152,7 +167,8 @@ class StatisticsSink:
                 # STANJE: each reading is the meter's lifetime total at that
                 # moment. Pick the latest sample within the bucket (typically
                 # just one for 24 h period) and write it through.
-                datum["sum"] = round(max(values), 4)
+                cumulative = round(max(values), 4)
+                datum["sum"] = cumulative
             elif has_sum:
                 cumulative += sum(values)
                 datum["sum"] = round(cumulative, 4)
@@ -168,6 +184,10 @@ class StatisticsSink:
         if has_sum and not is_state:
             # Remember our final cumulative so the next chunk in this cycle
             # can pick up without a recorder round-trip.
+            self._tail[statistic_id] = (max(hourly), cumulative)
+        elif is_state:
+            # STANJE doesn't need a baseline; the tail entry only marks the
+            # statistic as already anchored for later chunks in this cycle.
             self._tail[statistic_id] = (max(hourly), cumulative)
         _LOGGER.debug(
             "Imported %d hourly statistics rows for %s (from %d raw samples, baseline=%s)",
@@ -226,8 +246,40 @@ class StatisticsSink:
         )
 
 
-def _truncate_to_hour(ts: datetime) -> datetime:
-    return ts.replace(minute=0, second=0, microsecond=0)
+def _closing_hour_start(ts: datetime) -> datetime:
+    """UTC start of the hour a 15-minute reading belongs to.
+
+    Interval readings are stamped at the *end* of their slot: 00:15 covers
+    00:00-00:15 and 01:00 covers 00:45-01:00. Taking the hour of
+    ``timestamp - 1 s`` keeps each slot in the hour (and day, and month) it
+    describes. Truncating the stamp itself would move every :00 slot into the
+    next hour, and at an API window boundary (windows return 00:15 of the first
+    day to 00:00 after the last) the two windows would share an hour, which
+    the overlap guard in `_resolve_baseline` then skipped, dropping readings.
+    """
+    return (ts - timedelta(seconds=1)).replace(minute=0, second=0, microsecond=0)
+
+
+def _closing_day_start(ts: datetime) -> datetime:
+    """UTC start of the meter-local day a STANJE reading closes.
+
+    The API stamps each daily register reading at the local midnight
+    *after* the day it describes. Subtracting one second and taking the
+    local date gives that day, also on 23/25-hour DST days where a fixed
+    24 h shift would land on the wrong date.
+    """
+    local_day = (ts.astimezone(_METER_TZ) - timedelta(seconds=1)).date()
+    return _local_midnight_utc(local_day)
+
+
+def _previous_day_start(day_start: datetime) -> datetime:
+    """UTC start of the meter-local day before ``day_start``."""
+    local_day = day_start.astimezone(_METER_TZ).date() - timedelta(days=1)
+    return _local_midnight_utc(local_day)
+
+
+def _local_midnight_utc(day: date) -> datetime:
+    return datetime.combine(day, time.min, tzinfo=_METER_TZ).astimezone(dt_util.UTC)
 
 
 def _window_to_datetimes(window: tuple[date, date]) -> tuple[datetime, datetime]:
@@ -239,7 +291,7 @@ def _window_to_datetimes(window: tuple[date, date]) -> tuple[datetime, datetime]
 
 
 def _delete_statistics_in_window(
-    instance: object,
+    instance: Recorder,
     statistic_id: str,
     window_start: datetime,
     window_stop: datetime,
@@ -263,7 +315,7 @@ def _delete_statistics_in_window(
 
 
 def _sum_before_first_hour(
-    instance: object,
+    instance: Recorder,
     statistic_id: str,
     first_hour: datetime,
 ) -> tuple[float, datetime | None]:
@@ -307,5 +359,3 @@ def _parse_value(value: str | None) -> float | None:
         return float(value)
     except (TypeError, ValueError):
         return None
-
-

@@ -43,3 +43,19 @@ def test_server_error_is_base_class() -> None:
         raise_for_status(_response(503))
     assert exc.value.status_code == 503
     assert not isinstance(exc.value, AuthError | NotFoundError | InvalidRequestError)
+
+
+def test_response_without_request_still_maps_the_error() -> None:
+    """httpx raises RuntimeError on `.request` when none is attached; the
+    translator must still raise the mapped error, just without a URL."""
+    response = httpx.Response(404, text='{"opisNapake": "ni"}')
+    with pytest.raises(NotFoundError) as exc:
+        raise_for_status(response)
+    assert exc.value.request_url is None
+    assert str(exc.value) == "ni"
+
+
+def test_request_url_is_recorded() -> None:
+    with pytest.raises(NotFoundError) as exc:
+        raise_for_status(_response(404))
+    assert exc.value.request_url == "https://example.com/x"

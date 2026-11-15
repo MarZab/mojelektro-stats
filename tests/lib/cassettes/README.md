@@ -64,7 +64,7 @@ git commit -m "test(lib): refresh recorded VCR cassettes"
 
 ## The reading-types cassette is also a data source
 
-`test_recorded_reading_types.yaml` is consumed by `scripts/regen-reading-types.py` to refresh the hardcoded `custom_components/mojelektro_stats/lib/mojelektro_api/reading_types.py` catalog. If a new reading type is added upstream, re-record, then run `make regen-reading-types`.
+`test_recorded_reading_types.yaml` is consumed by `tools/scripts/regen-reading-types.py` to refresh the hardcoded `custom_components/mojelektro_stats/lib/mojelektro_api/reading_types.py` catalog. If a new reading type is added upstream, re-record, then run `mise run regen-reading-types`.
 
 ## When to re-record
 

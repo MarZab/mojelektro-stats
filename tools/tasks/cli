@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+#MISE description="Run the repo-local Moj Elektro CLI (mise run cli -- info 4-xxx)"
+set -euo pipefail
+PYTHONPATH="tools${PYTHONPATH:+:$PYTHONPATH}" exec uv run python -m cli "$@"

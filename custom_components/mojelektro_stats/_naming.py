@@ -19,7 +19,9 @@ from homeassistant.const import (
     UnitOfReactivePower,
 )
 
-from custom_components.mojelektro_stats import _bootstrap  # noqa: F401
+from custom_components.mojelektro_stats import (
+    _bootstrap,  # noqa: F401  # pyright: ignore[reportUnusedImport]
+)
 from mojelektro_api import ReadingTypeInfo
 
 

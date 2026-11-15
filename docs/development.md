@@ -6,30 +6,40 @@ End-user install instructions: [`README.md`](../README.md). Agent rules: [`AGENT
 
 ## Setup
 
+Tooling is managed by [mise](https://mise.jdx.dev): `mise.toml` pins Python and uv, and tasks live as scripts in `tools/tasks/`.
+
 ```bash
-uv sync                 # dev deps only (lint, test, CLI) — not installed into HA
-make test               # ruff + mypy + pyright + pytest
+mise install            # Python + uv at the pinned versions
+mise run setup          # uv sync — dev deps only (lint, test, CLI), not installed into HA
+mise run check          # ruff + mypy + pyright + pytest
 ```
 
 `pyproject.toml` configures this tooling. It is not a publishable package (`[tool.uv] package = false`).
 
-## Make targets
+## Tasks
+
+`mise tasks` lists everything. Arguments after `--` are passed through. `mise.toml` defines a shell alias `mr` for `mise run` (active when your shell runs `mise activate`), so `mr check`, `mr dev:up`, and so on work.
 
 ```bash
-make test                  # full check (lint + types + tests)
-make test-lib              # vendored lib + CLI tests
-make test-ha               # HA integration tests
-make lint                  # ruff check + format check
-make format                # apply ruff format
-make type                  # mypy + pyright
-make cli ARGS="types"      # repo-local CLI
-make dev-up                # docker compose (HA + InfluxDB)
-make dev-down              # stop dev stack
-make regen-reading-types   # refresh lib/reading_types.py from cassette
-make clean                 # remove caches
+mise run check                 # full check (lint + types + tests)
+mise run test                  # pytest (e.g. mise run test -- -k stanje)
+mise run test:lib              # vendored lib + CLI tests
+mise run test:ha               # HA integration tests
+mise run lint                  # ruff check + format check
+mise run format                # apply ruff fixes + format
+mise run type                  # mypy + pyright
+mise run cli -- types          # repo-local CLI
+mise run dev:up                # docker compose (HA + InfluxDB)
+mise run dev:down              # stop dev stack
+mise run regen-reading-types   # refresh lib/reading_types.py from cassette
+mise run clean                 # remove caches
+mise run sandbox -- plan       # sbx dev sandbox: plan | create | run | rm (tools/sandbox/run.sh)
+mise run release -- beta       # bump + commit + tag + push (see ai-rules/git-and-release.md)
 ```
 
-Fallbacks: `uv run pytest`, `uv run ruff check`, `uv run mypy`.
+To add a task, drop an executable script in `tools/tasks/` with a `#MISE description="…"` header. Subdirectories become namespaces (`tools/tasks/dev/up` → `dev:up`, `test/_default` → `test`).
+
+Without mise: `uv run pytest`, `uv run ruff check .`, `uv run mypy`.
 
 ## Repository layout
 
@@ -52,10 +62,12 @@ See [`ai-rules/home-assistant.md`](ai-rules/home-assistant.md) for integration p
 
 | Path | Purpose |
 |------|---------|
-| `cli/` | Typer CLI — `uv run python -m cli` ([`ai-rules/cli.md`](ai-rules/cli.md)) |
+| `tools/cli/` | Typer CLI — `mise run cli --` ([`ai-rules/cli.md`](ai-rules/cli.md)) |
 | `tests/lib/` | Vendored lib + CLI tests |
 | `tests/ha/` | Integration tests (pytest-homeassistant-custom-component) |
-| `scripts/` | `regen-reading-types.py`, `record-reading-types.py` |
+| `tools/scripts/` | `regen-reading-types.py`, `record-reading-types.py` |
+| `tools/tasks/` | mise task scripts (`mise tasks`) |
+| `mise.toml` | Pinned Python + uv, task config |
 | `docker/` | Local HA + InfluxDB for manual integration testing |
 | `docs/` | Specs, ai-rules, this file |
 
@@ -63,21 +75,34 @@ See [`ai-rules/home-assistant.md`](ai-rules/home-assistant.md) for integration p
 
 Debug the Moj Elektro API without running Home Assistant:
 
+Put your credentials in `.env` at the repo root (gitignored). The CLI loads it on start, and variables already set in your shell take precedence:
+
 ```bash
-export MOJELEKTRO_APIKEY="<token>"
-uv run python -m cli info <identifikator>
-uv run python -m cli readings <identifikator> -t A_PLUS_15MIN --days 7
+MOJELEKTRO_APIKEY=<token>
+MOJELEKTRO_USAGE_POINT=<identifikator>   # default for info / contract / readings
 ```
+
+```bash
+mise run cli -- info                                  # uses MOJELEKTRO_USAGE_POINT
+mise run cli -- readings -t A_PLUS_T0_DAILY --days 7
+mise run cli -- readings 4-XXXXXXX -t A_PLUS_15MIN     # an explicit argument wins
+mise run cli -- daily --days 14 --check                # per-day kWh from daily registers
+mise run cli -- hourly --start 2026-10-24               # per-hour kWh, checked against the register
+```
+
+`daily` columns default to A+ (total, VT, MT) and A- (total). Override them with `-t`, or set `MOJELEKTRO_DAILY_TYPES=A_PLUS_T0_DAILY,A_MINUS_T0_DAILY` in `.env`.
 
 ## Docker dev stack
 
 ```bash
-make dev-up      # HA at :8123, InfluxDB at :8086
-make dev-logs    # tail HA logs
-make dev-restart # pick up custom_components edits
+mise run dev:up      # HA at :8123, InfluxDB at :8086
+mise run dev:logs    # tail HA logs
+mise run dev:restart # pick up custom_components edits
 ```
 
 The integration is bind-mounted from `custom_components/mojelektro_stats/` (lib included).
+
+The stack runs Home Assistant 2026.11.1 and InfluxDB 2.9.1. Keep the HA image in `docker/Dockerfile.ha` on the same version as the `homeassistant` floor in `pyproject.toml` (`override-dependencies`), so manual testing and the test suite use the same HA; `mise run dev:build` picks up a changed image.
 
 ## Test cassettes
 
@@ -85,8 +110,8 @@ CI replays committed VCR cassettes — no live API calls. Re-recording procedure
 
 ## Reading-type catalog
 
-`lib/mojelektro_api/reading_types.py` is generated. After re-recording the reading-types cassette: `make regen-reading-types`.
+`lib/mojelektro_api/reading_types.py` is generated. After re-recording the reading-types cassette: `mise run regen-reading-types`.
 
 ## Releases (HACS)
 
-Version in `lib/mojelektro_api/__about__.py` and `manifest.json` — bump both by hand, in lockstep. See [`ai-rules/git-and-release.md`](ai-rules/git-and-release.md).
+Version in `lib/mojelektro_api/__about__.py` and `manifest.json`, kept in lockstep by `mise run release`. See [`ai-rules/git-and-release.md`](ai-rules/git-and-release.md).

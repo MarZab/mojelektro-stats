@@ -1,4 +1,4 @@
-# Moj Elektro
+# Moj Elektro Stats
 
 Home Assistant integration for [Moj Elektro](https://mojelektro.si) electricity data ([API docs](https://docs.informatika.si/mojelektro/api/)). Distributed as a [HACS](https://hacs.xyz/) custom component — self-contained, no extra Python packages to install.
 
@@ -20,12 +20,14 @@ Home Assistant integration for [Moj Elektro](https://mojelektro.si) electricity 
 
 Get an API token at [mojelektro.si](https://mojelektro.si) (Account → API).
 
-## Install (HACS)
+## Install (Marketplace / HACS)
 
-1. Add this repository as a [custom HACS repository](https://hacs.xyz/docs/faq/custom_repositories/) (category: **Integration**).
-2. Install **Moj Elektro** from HACS.
-3. Restart Home Assistant.
-4. Add the integration via **Settings → Devices & Services → Add Integration → Moj Elektro**.
+Home Assistant 2026.11+ ships HACS built in as **Marketplace**.
+
+1. **Settings → Marketplace** → ⋮ → **Custom repositories**, add `https://github.com/MarZab/mojelektro-stats` (category: **Integration**).
+   On Home Assistant 2026.10 or older, do the same from HACS → ⋮ → **Custom repositories**.
+2. Install **Moj Elektro Stats** and restart Home Assistant.
+3. Add the integration via **Settings → Devices & Services → Add Integration → Moj Elektro Stats**.
 
 Manual install: copy `custom_components/mojelektro_stats/` into your HA `config/custom_components/` directory and restart. The integration bundles its own typed API client under `lib/` — nothing else to install.
 
@@ -36,13 +38,19 @@ The integration writes its data as Home Assistant **long-term statistics** (stat
 - **Energy Dashboard** — the energy reading types appear in **Settings → Dashboards → Energy** (they carry the right `unit_class`). Add the cumulative `A+`/`A-` registers there for grid consumption/return — including the per-tariff (VT/MT) splits.
 - **`statistics-graph` card** — for power and anything else, add a [Statistics graph card](https://www.home-assistant.io/dashboards/statistics-graph/) and pick the `mojelektro_stats:…` statistics. Use `change` for cumulative energy and `mean`/`min`/`max` for power.
 
+> **Upgrading from 1.0.0:** daily register readings used to show up one day late. To fix history that was already imported, run **Configure → Backfill from a date** with your earliest date. See the [changelog](CHANGELOG.md).
+
 ## Repository layout
 
 | Path | Purpose |
 |------|---------|
 | `custom_components/mojelektro_stats/` | **The product** — HACS integration + vendored API client |
-| `cli/`, `tests/`, `scripts/`, `docker/`, `docs/` | Developer tooling — not shipped to HA users |
+| `tests/`, `tools/` (CLI, scripts, mise tasks), `docker/`, `docs/` | Developer tooling — not shipped to HA users |
 
 ## Development
 
-Contributors: see [`docs/development.md`](docs/development.md) for `uv sync`, `make test`, the local CLI, Docker dev stack, and cassette recording. AI-agent rules: [`AGENTS.md`](AGENTS.md).
+Contributors: see [`docs/development.md`](docs/development.md) for `uv sync`, `mise run check`, the local CLI, Docker dev stack, and cassette recording. AI-agent rules: [`AGENTS.md`](AGENTS.md).
+
+## License
+
+[MIT](LICENSE). Not affiliated with or endorsed by Moj Elektro or the Slovenian electricity distribution companies.

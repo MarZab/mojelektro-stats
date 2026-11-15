@@ -8,11 +8,11 @@ rules as `tests/lib/conftest.py`.
 
 Usage:
     set -a; source .env; set +a   # MOJELEKTRO_APIKEY
-    uv run scripts/record-reading-types.py
+    uv run tools/scripts/record-reading-types.py
 
 Then verify scrubbing and regenerate the typed catalog:
     grep -RI "$MOJELEKTRO_APIKEY" tests/lib/cassettes/ && echo LEAK || echo clean
-    make regen-reading-types
+    mise run regen-reading-types
 """
 
 from __future__ import annotations
@@ -24,7 +24,7 @@ import sys
 import httpx
 import vcr
 
-REPO_ROOT = pathlib.Path(__file__).resolve().parent.parent
+REPO_ROOT = pathlib.Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT / "tests" / "lib"))
 from conftest import _scrub_request, _scrub_response  # noqa: E402
 

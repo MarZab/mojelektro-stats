@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import cast
+
 import httpx
 
 from mojelektro_api.errors import (
@@ -16,7 +18,10 @@ def raise_for_status(response: httpx.Response) -> None:
         return
     message = _extract_message(response)
     body = response.text
-    url = str(response.request.url) if response.request is not None else None
+    try:
+        url: str | None = str(response.request.url)
+    except RuntimeError:  # httpx raises when no request is attached
+        url = None
     kwargs: dict[str, object] = {
         "status_code": status,
         "request_url": url,
@@ -39,8 +44,9 @@ def _extract_message(response: httpx.Response) -> str:
         body = response.text.strip()
         return f"{fallback}: {_truncate(body)}" if body else fallback
     if isinstance(data, dict):
+        fields = cast(dict[str, object], data)
         for key in ("opisNapake", "message", "error", "title"):
-            value = data.get(key)
+            value = fields.get(key)
             if isinstance(value, str) and value.strip():
                 return value
     # JSON, but no known field — surface the raw payload so callers can debug.

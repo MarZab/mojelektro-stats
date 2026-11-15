@@ -1,0 +1,10 @@
+[project]
+name = "ha-test-compat"
+version = "0"
+description = "Dev-only shim: lets pytest-homeassistant-custom-component load on a newer Home Assistant"
+requires-python = ">=3.14.2"
+dependencies = []
+
+[build-system]
+requires = ["uv_build>=0.8"]
+build-backend = "uv_build"

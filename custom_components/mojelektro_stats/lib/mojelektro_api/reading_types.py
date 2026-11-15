@@ -1,7 +1,7 @@
 """Typed constants for the Moj Elektro reading-type catalog.
 
 GENERATED FILE. Do not edit by hand. Regenerate with:
-    make regen-reading-types
+    mise run regen-reading-types
 
 Source: tests/lib/cassettes/test_client_recorded/test_recorded_reading_types.yaml
 Catalog size: 20 reading types

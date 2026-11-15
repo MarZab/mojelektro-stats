@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+#MISE description="Tail Home Assistant logs"
+set -euo pipefail
+exec docker compose -f docker/compose.yaml logs -f homeassistant "$@"

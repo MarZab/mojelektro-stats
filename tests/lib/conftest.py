@@ -47,6 +47,13 @@ from typing import Any
 
 import pytest
 
+# Typer forces a Rich terminal (ANSI styling) when GITHUB_ACTIONS, FORCE_COLOR
+# or PY_COLORS is set, which splits strings like `--type` in captured --help
+# output. This switch, read when typer.rich_utils is imported, turns that off
+# so CLI tests see the same plain text in CI as locally.
+os.environ["_TYPER_FORCE_DISABLE_TERMINAL"] = "1"
+
+
 # Plausible-looking but unreal substitutes. Distinct shapes match the real
 # identifiers (short-form vs 18-digit GSRNs) so the substitution is visually
 # obvious and consumers stay correct.

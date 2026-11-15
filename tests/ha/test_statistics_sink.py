@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import re
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, time, timedelta
 from unittest.mock import AsyncMock, patch
+from zoneinfo import ZoneInfo
 
 import pytest
 
@@ -47,13 +48,31 @@ async def test_statistic_id_matches_ha_regex(
 
 
 def _four_quarter_readings(hour: datetime, values: list[float]) -> list[dict[str, str]]:
-    """Four 15-minute readings within a single hour."""
+    """The four 15-minute readings of one hour, stamped like the API does: at
+    the end of each slot (:15, :30, :45 and the next hour's :00)."""
     return [
         {
-            "timestamp": (hour.replace(minute=15 * i)).isoformat(),
+            "timestamp": (hour + timedelta(minutes=15 * (i + 1))).isoformat(),
             "value": str(v),
         }
         for i, v in enumerate(values)
+    ]
+
+
+def _api_window_readings(first: date, last: date, value: str) -> list[dict[str, str]]:
+    """15-minute readings exactly as one /meter-readings window returns them
+    for local days ``first``..``last``: from 00:15 on ``first`` to 00:00 after
+    ``last``, in Europe/Ljubljana time."""
+    tz = ZoneInfo("Europe/Ljubljana")
+    start = datetime.combine(first, time.min, tzinfo=tz).astimezone(UTC)
+    stop = datetime.combine(last + timedelta(days=1), time.min, tzinfo=tz).astimezone(UTC)
+    slots = int((stop - start) / timedelta(minutes=15))
+    return [
+        {
+            "timestamp": (start + timedelta(minutes=15 * (i + 1))).astimezone(tz).isoformat(),
+            "value": value,
+        }
+        for i in range(slots)
     ]
 
 
@@ -95,9 +114,7 @@ async def test_energy_aggregates_4_quarter_hours_into_hourly_sum(
 
 
 @pytest.mark.ha
-async def test_power_aggregates_to_hourly_mean_min_max(
-    recorder_mock: object, hass: object
-) -> None:
+async def test_power_aggregates_to_hourly_mean_min_max(recorder_mock: object, hass: object) -> None:
     sink = StatisticsSink(hass)  # type: ignore[arg-type]
     captured_data: list[list[dict]] = []
 
@@ -195,33 +212,159 @@ async def test_stanje_uses_value_directly_without_accumulation(
     recorder_mock: object, hass: object
 ) -> None:
     """STANJE (daily cumulative meter state) readings ARE the cumulative total
-    — we shouldn't sum-accumulate them on top of themselves."""
+    — we shouldn't sum-accumulate them on top of themselves. Each reading is
+    attributed to the local day it closes, and a fresh statistic gets a
+    zero-change anchor row one day earlier so the first day's change isn't
+    the lifetime register total."""
+    info = BY_NAME["A_PLUS_T0_DAILY"]
+    # Three daily reads, stamped at the local midnight after the day they close.
+    readings = [
+        {"timestamp": "2026-06-01T00:00:00+02:00", "value": "1000.0"},
+        {"timestamp": "2026-06-02T00:00:00+02:00", "value": "1005.0"},
+        {"timestamp": "2026-06-03T00:00:00+02:00", "value": "1010.0"},
+    ]
+    data = (await _write_stanje(hass, info, [readings], prior=(9999.0, None)))[0]
+
+    assert [row["start"] for row in data] == [
+        _local_midnight(date(2026, 5, 30)),  # anchor
+        _local_midnight(date(2026, 5, 31)),
+        _local_midnight(date(2026, 6, 1)),
+        _local_midnight(date(2026, 6, 2)),
+    ]
+    sums = [row["sum"] for row in data]
+    assert sums == [
+        pytest.approx(1000.0),
+        pytest.approx(1000.0),
+        pytest.approx(1005.0),
+        pytest.approx(1010.0),
+    ]
+
+
+@pytest.mark.ha
+async def test_stanje_does_not_anchor_when_prior_data_exists(
+    recorder_mock: object, hass: object
+) -> None:
+    info = BY_NAME["A_PLUS_T0_DAILY"]
+    readings = [
+        {"timestamp": "2026-06-02T00:00:00+02:00", "value": "1005.0"},
+        {"timestamp": "2026-06-03T00:00:00+02:00", "value": "1010.0"},
+    ]
+    prior = (1000.0, _local_midnight(date(2026, 5, 31)))
+    data = (await _write_stanje(hass, info, [readings], prior=prior))[0]
+
+    assert len(data) == 2
+    assert data[0]["start"] == _local_midnight(date(2026, 6, 1))
+
+
+@pytest.mark.ha
+async def test_stanje_back_to_back_chunks_do_not_anchor_again(
+    recorder_mock: object, hass: object
+) -> None:
+    info = BY_NAME["A_PLUS_T0_DAILY"]
+    chunk_a = [
+        {"timestamp": "2026-06-01T00:00:00+02:00", "value": "1000.0"},
+        {"timestamp": "2026-06-02T00:00:00+02:00", "value": "1005.0"},
+    ]
+    chunk_b = [
+        {"timestamp": "2026-06-03T00:00:00+02:00", "value": "1010.0"},
+    ]
+    captured = await _write_stanje(hass, info, [chunk_a, chunk_b], prior=(0.0, None))
+
+    assert len(captured[0]) == 3
+    assert len(captured[1]) == 1
+    assert captured[1][0]["start"] == _local_midnight(date(2026, 6, 2))
+
+
+@pytest.mark.ha
+async def test_stanje_spring_dst_day_keeps_its_own_row(recorder_mock: object, hass: object) -> None:
+    """Mar 29 2026 is a 23-hour day (CET -> CEST). Its closing reading is
+    stamped 2026-03-30T00:00+02:00; a fixed 24 h shift would put it at
+    23:00 on Mar 28, giving Mar 28 two days of usage and Mar 29 none."""
+    info = BY_NAME["A_PLUS_T0_DAILY"]
+    readings = [
+        {"timestamp": "2026-03-29T00:00:00+01:00", "value": "100.0"},  # closes Mar 28
+        {"timestamp": "2026-03-30T00:00:00+02:00", "value": "110.0"},  # closes Mar 29
+        {"timestamp": "2026-03-31T00:00:00+02:00", "value": "125.0"},  # closes Mar 30
+    ]
+    prior = (90.0, _local_midnight(date(2026, 3, 27)))
+    data = (await _write_stanje(hass, info, [readings], prior=prior))[0]
+
+    assert [row["start"] for row in data] == [
+        _local_midnight(date(2026, 3, 28)),
+        _local_midnight(date(2026, 3, 29)),
+        _local_midnight(date(2026, 3, 30)),
+    ]
+    assert [row["sum"] for row in data] == [
+        pytest.approx(100.0),
+        pytest.approx(110.0),
+        pytest.approx(125.0),
+    ]
+
+
+@pytest.mark.ha
+async def test_stanje_autumn_dst_day_starts_at_local_midnight(
+    recorder_mock: object, hass: object
+) -> None:
+    """Oct 25 2026 is a 25-hour day (CEST -> CET)."""
+    info = BY_NAME["A_PLUS_T0_DAILY"]
+    readings = [
+        {"timestamp": "2026-10-25T00:00:00+02:00", "value": "200.0"},  # closes Oct 24
+        {"timestamp": "2026-10-26T00:00:00+01:00", "value": "245.4"},  # closes Oct 25
+        {"timestamp": "2026-10-27T00:00:00+01:00", "value": "245.6"},  # closes Oct 26
+    ]
+    prior = (150.0, _local_midnight(date(2026, 10, 23)))
+    data = (await _write_stanje(hass, info, [readings], prior=prior))[0]
+
+    assert [row["start"] for row in data] == [
+        _local_midnight(date(2026, 10, 24)),
+        _local_midnight(date(2026, 10, 25)),
+        _local_midnight(date(2026, 10, 26)),
+    ]
+
+
+@pytest.mark.ha
+async def test_stanje_anchor_is_previous_local_day_across_dst(
+    recorder_mock: object, hass: object
+) -> None:
+    info = BY_NAME["A_PLUS_T0_DAILY"]
+    readings = [{"timestamp": "2026-03-30T00:00:00+02:00", "value": "110.0"}]  # closes Mar 29
+    data = (await _write_stanje(hass, info, [readings], prior=(0.0, None)))[0]
+
+    assert [row["start"] for row in data] == [
+        _local_midnight(date(2026, 3, 28)),  # anchor: a calendar day back, not 24 h
+        _local_midnight(date(2026, 3, 29)),
+    ]
+
+
+def _local_midnight(day: date) -> datetime:
+    """Europe/Ljubljana midnight starting ``day``, in UTC."""
+    return datetime.combine(day, time.min, tzinfo=ZoneInfo("Europe/Ljubljana")).astimezone(UTC)
+
+
+async def _write_stanje(
+    hass: object,
+    info: object,
+    chunks: list[list[dict[str, str]]],
+    *,
+    prior: tuple[float, datetime | None],
+) -> list[list[dict]]:
+    """Write each chunk through a fresh sink; return the rows per call."""
     sink = StatisticsSink(hass)  # type: ignore[arg-type]
-    captured_data: list[list[dict]] = []
+    captured: list[list[dict]] = []
 
     def fake(_hass: object, _md: dict, data: list) -> None:
-        captured_data.append(list(data))
+        captured.append(list(data))
 
-    info = BY_NAME["A_PLUS_T0_DAILY"]
-    # Three daily reads, each carrying the meter's lifetime total at that day.
-    readings = [
-        {"timestamp": "2026-06-01T00:00:00+00:00", "value": "1000.0"},
-        {"timestamp": "2026-06-02T00:00:00+00:00", "value": "1005.0"},
-        {"timestamp": "2026-06-03T00:00:00+00:00", "value": "1010.0"},
-    ]
-    # _previous_sum_before would normally return some baseline but for STANJE
-    # we don't use it — assert that explicitly by giving it a poison value.
     with (
         patch(
             "custom_components.mojelektro_stats.sinks.statistics.async_add_external_statistics",
             side_effect=fake,
         ),
-        patch.object(StatisticsSink, "_previous_sum_before", return_value=(9999.0, None)),
+        patch.object(StatisticsSink, "_previous_sum_before", return_value=prior),
     ):
-        await sink.write("4-1234567", info, readings)  # type: ignore[arg-type]
-
-    sums = [row["sum"] for row in captured_data[0]]
-    assert sums == [pytest.approx(1000.0), pytest.approx(1005.0), pytest.approx(1010.0)]
+        for chunk in chunks:
+            await sink.write("4-1234567", info, chunk)  # type: ignore[arg-type]
+    return captured
 
 
 @pytest.mark.ha
@@ -292,3 +435,43 @@ async def test_overlapping_chunk_boundary_does_not_double_count(
     assert len(captured[1]) == 1
     assert captured[1][0]["start"] == h1
     assert captured[1][0]["sum"] == pytest.approx(4.0)
+
+
+@pytest.mark.ha
+async def test_quarter_hours_stay_in_the_hour_they_describe(
+    recorder_mock: object, hass: object
+) -> None:
+    """A reading stamped 00:00 covers 23:45-24:00 of the previous day, so it
+    belongs to hour 23:00, and to the previous month at a month boundary."""
+    info = BY_NAME["A_PLUS_15MIN"]
+    readings = [
+        {"timestamp": "2026-10-31T23:45:00+01:00", "value": "0.1"},
+        {"timestamp": "2026-11-01T00:00:00+01:00", "value": "0.2"},  # 23:45-24:00 Oct 31
+        {"timestamp": "2026-11-01T00:15:00+01:00", "value": "0.4"},
+    ]
+    data = (await _write_stanje(hass, info, [readings], prior=(0.0, None)))[0]
+
+    oct31_2300 = datetime(2026, 10, 31, 22, 0, tzinfo=UTC)  # 23:00 CET
+    nov1_0000 = datetime(2026, 10, 31, 23, 0, tzinfo=UTC)  # 00:00 CET
+    assert [row["start"] for row in data] == [oct31_2300, nov1_0000]
+    assert [row["sum"] for row in data] == [pytest.approx(0.3), pytest.approx(0.7)]
+
+
+@pytest.mark.ha
+async def test_api_window_boundary_keeps_every_quarter_hour(
+    recorder_mock: object, hass: object
+) -> None:
+    """Regression: back-to-back /meter-readings windows (local days, 00:15 to
+    00:00) used to share their boundary hour, and the overlap guard dropped
+    the second window's first three quarter-hours."""
+    info = BY_NAME["A_PLUS_15MIN"]
+    chunk_a = _api_window_readings(date(2026, 10, 1), date(2026, 10, 2), "0.25")
+    chunk_b = _api_window_readings(date(2026, 10, 3), date(2026, 10, 4), "0.25")
+    captured = await _write_stanje(hass, info, [chunk_a, chunk_b], prior=(0.0, None))
+
+    rows = captured[0] + captured[1]
+    assert len(rows) == 4 * 24  # four full local days, one row per hour
+    starts = [row["start"] for row in rows]
+    assert len(set(starts)) == len(starts)
+    # Every slot of both windows is counted exactly once.
+    assert rows[-1]["sum"] == pytest.approx(0.25 * len(chunk_a + chunk_b))

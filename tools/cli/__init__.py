@@ -8,7 +8,7 @@ from typing import Any
 import typer
 from typer.core import TyperGroup
 
-import cli._path  # noqa: F401
+import cli._path  # noqa: F401  # pyright: ignore[reportUnusedImport]
 from cli._format import OutputFormat
 from mojelektro_api.errors import (
     AuthError,
@@ -99,7 +99,7 @@ def handle_errors(func: Callable[..., Any]) -> Callable[..., Any]:
 
 
 @app.callback()
-def _root(
+def main_callback(
     ctx: typer.Context,
     token: str | None = typer.Option(None, "--token", envvar="MOJELEKTRO_APIKEY"),
     server: str = typer.Option(
@@ -121,6 +121,8 @@ def _root(
     ctx.obj = {"token": token, "server": server, "format": fmt, "verbose": verbose}
 
 
+from cli.daily import daily_cmd  # noqa: E402
+from cli.hourly import hourly_cmd  # noqa: E402
 from cli.meter import contract_cmd, info_cmd  # noqa: E402
 from cli.readings import readings_cmd  # noqa: E402
 from cli.types import types_cmd  # noqa: E402
@@ -132,3 +134,5 @@ app.command("types")(handle_errors(types_cmd))
 app.command("info")(handle_errors(info_cmd))
 app.command("contract")(handle_errors(contract_cmd))
 app.command("readings")(readings_cmd)
+app.command("daily")(daily_cmd)
+app.command("hourly")(hourly_cmd)

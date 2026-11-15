@@ -8,6 +8,7 @@ import questionary
 import typer
 
 from cli._client import build_client
+from cli._env import USAGE_POINT_ENVVAR
 from cli._format import (
     OutputFormat,
     compute_widths,
@@ -100,7 +101,9 @@ async def _prompt_types_async() -> list[str]:
 
 def _readings(
     ctx: typer.Context,
-    usage_point: str | None = typer.Argument(None, help="identifikator or gsrnMm."),
+    usage_point: str | None = typer.Argument(
+        None, envvar=USAGE_POINT_ENVVAR, help="identifikator or gsrnMm."
+    ),
     type_: list[str] = typer.Option(None, "--type", "-t", help="Reading type name (repeatable)."),
     option: list[str] = typer.Option(None, "--option", help="Raw reading type code (repeatable)."),
     start: datetime | None = typer.Option(
@@ -150,7 +153,7 @@ async def _run_batch(
     async with client:
         gsrn = await resolve_gsrn_mm(client, usage_point)
         out = await client.get_meter_readings(gsrn, start_d, end_d, options=options)
-    typer.echo(dump_readings(dict(out), fmt))
+    typer.echo(dump_readings(out, fmt))
 
 
 async def _run_interactive(
@@ -199,9 +202,7 @@ async def _walk_windows(
     columns: list[str] | None = None
     widths: list[int] = []
     while True:
-        payload = dict(
-            await client.get_meter_readings(gsrn, window_start, window_end, options=options)
-        )
+        payload = await client.get_meter_readings(gsrn, window_start, window_end, options=options)
         pivot_cols, pivot_rows = pivot_readings(payload)
 
         if columns is None:

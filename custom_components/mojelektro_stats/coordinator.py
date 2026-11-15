@@ -1,4 +1,4 @@
-"""DataUpdateCoordinator for the Moj Elektro integration.
+"""DataUpdateCoordinator for the Moj Elektro Stats integration.
 
 Polls once per day at 06:00 local time (the trigger is registered in
 `async_setup_entry`). Per-usage-point window `[last_synced_end, cutoff)` where
@@ -17,6 +17,7 @@ from __future__ import annotations
 import asyncio
 import logging
 from collections.abc import Iterator, Mapping
+from contextlib import AsyncExitStack
 from datetime import date, timedelta
 from typing import Any, Final
 
@@ -25,7 +26,9 @@ from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
 
-from custom_components.mojelektro_stats import _bootstrap  # noqa: F401
+from custom_components.mojelektro_stats import (
+    _bootstrap,  # noqa: F401  # pyright: ignore[reportUnusedImport]
+)
 from custom_components.mojelektro_stats.const import (
     CONF_IDENTIFIKATOR,
     CONF_ROUTING,
@@ -49,6 +52,9 @@ _PER_POINT_TIMEOUT_S: Final = 60
 
 
 class MojElektroDataUpdateCoordinator(DataUpdateCoordinator[None]):
+    # Set by async_setup_entry: owns the HTTP clients, closed on unload.
+    runtime_stack: AsyncExitStack
+
     def __init__(
         self,
         hass: HomeAssistant,

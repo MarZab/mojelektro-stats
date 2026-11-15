@@ -23,6 +23,7 @@ The backfill deletes the existing statistics in each window before importing it 
 
 ### Changed
 
+- **Requires Home Assistant 2026.11.0 or newer** (was 2025.4.0). HACS won't offer this update on older versions; update Home Assistant first.
 - Prepared for the HACS default catalog / Home Assistant Marketplace: brand icon, LICENSE, `hacs.json` country, and `hassfest` + HACS validation in CI.
 - Releases are now full GitHub Releases. Pre-release versions are published to the HACS beta channel for users who opt in.
 

@@ -39,14 +39,8 @@ from homeassistant.components.recorder.models import (
 from homeassistant.components.recorder.statistics import (
     async_add_external_statistics,
 )
-
-# Re-exported from recorder.util on every supported HA version (2025.4+); the
-# newer homeassistant.helpers.recorder home isn't guaranteed that far back.
-from homeassistant.components.recorder.util import (
-    get_instance,  # pyright: ignore[reportPrivateImportUsage]
-    session_scope,  # pyright: ignore[reportPrivateImportUsage]
-)
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.recorder import get_instance, session_scope
 from homeassistant.util import dt as dt_util
 from sqlalchemy import delete, select
 

@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+#MISE description="Rebuild the HA dev image (rarely needed)"
+set -euo pipefail
+exec docker compose -f docker/compose.yaml build homeassistant "$@"

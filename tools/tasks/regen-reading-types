@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+#MISE description="Regenerate reading_types.py from the catalog cassette"
+set -euo pipefail
+uv run python tools/scripts/regen-reading-types.py
+uv run ruff format custom_components/mojelektro_stats/lib/mojelektro_api/reading_types.py

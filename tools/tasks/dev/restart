@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+#MISE description="Restart HA to pick up custom_components edits"
+set -euo pipefail
+exec docker compose -f docker/compose.yaml restart homeassistant "$@"

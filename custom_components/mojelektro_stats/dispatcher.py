@@ -41,7 +41,7 @@ class Dispatcher:
             if info is None:
                 _LOGGER.debug(
                     "Unknown reading type %r for usage point %s; "
-                    "consider running `make regen-reading-types`",
+                    "consider running `mise run regen-reading-types`",
                     raw_code,
                     usage_point,
                 )

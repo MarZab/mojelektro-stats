@@ -43,8 +43,8 @@ The integration writes its data as Home Assistant **long-term statistics** (stat
 | Path | Purpose |
 |------|---------|
 | `custom_components/mojelektro_stats/` | **The product** — HACS integration + vendored API client |
-| `cli/`, `tests/`, `scripts/`, `docker/`, `docs/` | Developer tooling — not shipped to HA users |
+| `tests/`, `tools/` (CLI, scripts, mise tasks), `docker/`, `docs/` | Developer tooling — not shipped to HA users |
 
 ## Development
 
-Contributors: see [`docs/development.md`](docs/development.md) for `uv sync`, `make test`, the local CLI, Docker dev stack, and cassette recording. AI-agent rules: [`AGENTS.md`](AGENTS.md).
+Contributors: see [`docs/development.md`](docs/development.md) for `uv sync`, `mise run check`, the local CLI, Docker dev stack, and cassette recording. AI-agent rules: [`AGENTS.md`](AGENTS.md).

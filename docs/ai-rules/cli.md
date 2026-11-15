@@ -1,6 +1,6 @@
 # CLI rules
 
-**Developer tooling only.** The CLI under `cli/` is for local API debugging and scripting. It is not installed via HACS and does not ship to Home Assistant users.
+**Developer tooling only.** The CLI under `tools/cli/` is for local API debugging and scripting. It is not installed via HACS and does not ship to Home Assistant users.
 
 ## Stack
 
@@ -11,11 +11,11 @@ Typer for command structure + Rich (via Typer) for help output. `questionary` pr
 Run from the repo root after `uv sync`:
 
 ```bash
-uv run python -m cli <subcommand> ...
-make cli ARGS="info 4-XXXXXXX"
+mise run cli -- <subcommand> ...              # or: PYTHONPATH=tools uv run python -m cli
+mise run cli -- info 4-XXXXXXX
 ```
 
-The Typer app lives in `cli/__init__.py` as `app`. `cli/_path.py` adds the vendored lib to `sys.path` so the CLI works outside pytest.
+The Typer app lives in `tools/cli/__init__.py` as `app`. `tools/cli/_path.py` adds the vendored lib to `sys.path` so the CLI works outside pytest.
 
 ## Conventions
 
@@ -29,15 +29,15 @@ The Typer app lives in `cli/__init__.py` as `app`. `cli/_path.py` adds the vendo
 ## Command shape
 
 ```
-python -m cli info IDENTIFIKATOR                     # merilno mesto
-python -m cli contract IDENTIFIER                    # merilna tocka (resolves short id)
-python -m cli readings [USAGE_POINT] [...]           # interactive when args missing on TTY
-python -m cli types [--filter SUBSTRING]             # hardcoded reading-type catalog
+mise run cli -- info IDENTIFIKATOR                     # merilno mesto
+mise run cli -- contract IDENTIFIER                    # merilna tocka (resolves short id)
+mise run cli -- readings [USAGE_POINT] [...]           # interactive when args missing on TTY
+mise run cli -- types [--filter SUBSTRING]             # hardcoded reading-type catalog
 ```
 
 The `info` / `contract` / `readings` commands accept either the short `identifikator` (e.g. `4-XXXXXXX`) or the 18-digit GSRN — short form is resolved via `/merilno-mesto`.
 
-The top-level `--help` table shows each command's positional arguments inline (e.g. `info IDENTIFIKATOR`) — the listing is driven by a `TyperGroup` subclass in `cli/__init__.py` that mutates `cmd.name` on listing and restores the bare key on lookup.
+The top-level `--help` table shows each command's positional arguments inline (e.g. `info IDENTIFIKATOR`) — the listing is driven by a `TyperGroup` subclass in `tools/cli/__init__.py` that mutates `cmd.name` on listing and restores the bare key on lookup.
 
 Don't add command aliases. Don't make commands depend on a config file — env vars and flags are the configuration surface.
 
@@ -52,7 +52,7 @@ Time values are passed through as the API delivered them (ISO 8601 with timezone
 
 ## Interactive readings
 
-`python -m cli readings <id>` with no `--type` / `--option` and a TTY:
+`mise run cli -- readings <id>` with no `--type` / `--option` and a TTY:
 
 1. Multi-select picker over `KNOWN_READING_TYPES`.
 2. After confirm, prints the equivalent non-interactive command, then fetches + pages.

@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+#MISE description="Run Home Assistant integration tests"
+set -euo pipefail
+uv run pytest tests/ha -x -m ha "$@"

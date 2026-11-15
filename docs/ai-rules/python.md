@@ -1,6 +1,6 @@
 # Python rules
 
-Apply to all Python in this repo. The **product** is the HACS integration; `cli/`, `tests/`, and `scripts/` are developer tooling that follow the same standards.
+Apply to all Python in this repo. The **product** is the HACS integration; `tools/cli/`, `tests/`, and `tools/scripts/` are developer tooling that follow the same standards.
 
 ## Version
 

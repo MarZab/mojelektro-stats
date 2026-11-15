@@ -1,6 +1,6 @@
 # Library (`mojelektro_api`) rules
 
-Vendored API client inside the HACS integration at `custom_components/mojelektro_stats/lib/mojelektro_api/`. It is **not** a standalone PyPI package — it ships with the integration and is also imported by dev tooling (`cli/`, `tests/`).
+Vendored API client inside the HACS integration at `custom_components/mojelektro_stats/lib/mojelektro_api/`. It is **not** a standalone PyPI package — it ships with the integration and is also imported by dev tooling (`tools/cli/`, `tests/`).
 
 The library is **pure typed API access to Moj Elektro**. Nothing else.
 
@@ -61,10 +61,10 @@ When the API grows a new endpoint we care about, add it as a method on `MojElekt
 
 ## Reading-type catalog
 
-`custom_components/mojelektro_stats/lib/mojelektro_api/reading_types.py` is **generated** by `scripts/regen-reading-types.py` from the committed reading-types VCR cassette. Never hand-edit. To refresh after upstream adds new types:
+`custom_components/mojelektro_stats/lib/mojelektro_api/reading_types.py` is **generated** by `tools/scripts/regen-reading-types.py` from the committed reading-types VCR cassette. Never hand-edit. To refresh after upstream adds new types:
 
 1. Re-record `test_recorded_reading_types.yaml` (see [`tests/lib/cassettes/README.md`](../../tests/lib/cassettes/README.md)).
-2. `make regen-reading-types`.
+2. `mise run regen-reading-types`.
 
 The catalog ships as `KNOWN_READING_TYPES` plus lookup tables `BY_NAME` / `BY_OZNAKA` / `BY_RAW_CODE`. The HA config flow uses these to populate the per-reading-type sensor picker.
 

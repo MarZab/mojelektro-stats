@@ -11,9 +11,10 @@ Everything else in the repo is **developer tooling**:
 | Path | Role |
 |------|------|
 | `custom_components/mojelektro_stats/` | Integration + vendored lib — **primary** |
-| `cli/` | Local CLI for API debugging |
+| `tools/cli/` | Local CLI for API debugging |
 | `tests/` | pytest (lib, CLI, integration) |
-| `scripts/` | Catalog regeneration, version bumps |
+| `tools/scripts/` | Catalog regeneration, version bumps |
+| `tools/tasks/` | mise task scripts — `mise.toml` pins Python + uv |
 | `docker/` | Local HA + InfluxDB dev stack |
 | `docs/` | Specs, ai-rules, contributor docs |
 | `pyproject.toml` | Dev-tool config only (`uv sync`, ruff, mypy, pytest) — not published |
@@ -27,7 +28,7 @@ Architecture: **thin library, smart integration**. The vendored lib is pure type
 | [`docs/README.md`](docs/README.md) | Documentation index |
 | [`docs/ai-rules/home-assistant.md`](docs/ai-rules/home-assistant.md) | Integration changes (start here for most tasks) |
 | [`docs/ai-rules/library.md`](docs/ai-rules/library.md) | Vendored `lib/mojelektro_api/` API client |
-| [`docs/development.md`](docs/development.md) | Dev setup, make targets, repo layout |
+| [`docs/development.md`](docs/development.md) | Dev setup, mise tasks, repo layout |
 | [`docs/ai-rules/`](docs/ai-rules/) | Task-specific coding rules |
 | [`docs/superpowers/specs/2026-06-07-mojelektro-design.md`](docs/superpowers/specs/2026-06-07-mojelektro-design.md) | Design spec — read before non-trivial changes |
 
@@ -45,17 +46,20 @@ Read the one relevant file in [`docs/ai-rules/`](docs/ai-rules/) before editing:
 | [`testing.md`](docs/ai-rules/testing.md) | `tests/` |
 | [`errors-and-logging.md`](docs/ai-rules/errors-and-logging.md) | Exceptions, logging |
 | [`git-and-release.md`](docs/ai-rules/git-and-release.md) | Version bumps, HACS releases |
-| [`cli.md`](docs/ai-rules/cli.md) | `cli/` (dev only) |
+| [`cli.md`](docs/ai-rules/cli.md) | `tools/cli/` (dev only) |
 
 ## Quick commands (development)
 
 ```bash
-make test                  # ruff + mypy + pyright + pytest
-make lint                  # ruff check + format
-make dev-up                # docker compose (HA + InfluxDB)
-make regen-reading-types   # refresh vendored reading-type catalog
-make cli ARGS="types"      # run repo-local CLI
+mise run check                 # ruff + mypy + pyright + pytest
+mise run test                  # pytest only
+mise run lint                  # ruff check + format
+mise run dev:up                # docker compose (HA + InfluxDB)
+mise run regen-reading-types   # refresh vendored reading-type catalog
+mise run cli -- types          # run repo-local CLI
 ```
+
+Tasks are scripts in `tools/tasks/` (`mise tasks` lists them).
 
 ## Hard rules
 
@@ -66,7 +70,7 @@ make cli ARGS="types"      # run repo-local CLI
 5. **All new code has tests.** Lib → `tests/lib/`; integration → `tests/ha/`.
 6. **No live API calls in CI.** VCR cassettes or mocks only.
 7. **Version truth:** `custom_components/mojelektro_stats/lib/mojelektro_api/__about__.py` + matching `manifest.json` `"version"`. Bump both by hand, in lockstep.
-8. **Reading-type catalog** is hardcoded in `lib/mojelektro_api/reading_types.py`. Regenerate with `make regen-reading-types`.
+8. **Reading-type catalog** is hardcoded in `lib/mojelektro_api/reading_types.py`. Regenerate with `mise run regen-reading-types`.
 
 ## What not to do without checking with the human
 

@@ -7,7 +7,7 @@ This repository ships a **HACS Home Assistant integration** (`custom_components/
 | Audience | Entry point |
 |----------|-------------|
 | End users | [`README.md`](../README.md) — install via HACS, what the integration does |
-| Contributors | [`development.md`](development.md) — dev setup, make targets, repo layout |
+| Contributors | [`development.md`](development.md) — dev setup, mise tasks, repo layout |
 | AI agents | [`AGENTS.md`](../AGENTS.md) — project framing, hard rules, rule index |
 
 ## Integration (primary)
@@ -22,8 +22,8 @@ This repository ships a **HACS Home Assistant integration** (`custom_components/
 
 | Doc / path | Purpose |
 |------------|---------|
-| [`development.md`](development.md) | `uv sync`, `make test`, Docker dev stack |
-| [`ai-rules/cli.md`](ai-rules/cli.md) | Repo-local CLI (`cli/`) |
+| [`development.md`](development.md) | `uv sync`, `mise run check`, Docker dev stack |
+| [`ai-rules/cli.md`](ai-rules/cli.md) | Repo-local CLI (`tools/cli/`) |
 | [`ai-rules/testing.md`](ai-rules/testing.md) | `tests/`, VCR cassettes |
 | [`tests/lib/cassettes/README.md`](../tests/lib/cassettes/README.md) | Recording API cassettes |
 | [`ai-rules/python.md`](ai-rules/python.md) | Typing, ruff, async conventions |

@@ -7,7 +7,7 @@ cassette. The cassette scrub is path-aware: naziv stays intact for
 reading-type items (Slovene description like "Prejeta 15 minutna delovna
 energija") and is REDACTED only for merilno-mesto/lastnik responses.
 
-Run: `make regen-reading-types`
+Run: `mise run regen-reading-types`
 """
 
 from __future__ import annotations
@@ -19,7 +19,7 @@ import sys
 
 import yaml
 
-REPO_ROOT = pathlib.Path(__file__).resolve().parent.parent
+REPO_ROOT = pathlib.Path(__file__).resolve().parents[2]
 CASSETTE = (
     REPO_ROOT
     / "tests"
@@ -85,7 +85,7 @@ def _render(items: list[dict[str, str]]) -> str:
         '"""Typed constants for the Moj Elektro reading-type catalog.',
         "",
         "GENERATED FILE. Do not edit by hand. Regenerate with:",
-        "    make regen-reading-types",
+        "    mise run regen-reading-types",
         "",
         f"Source: {CASSETTE.relative_to(REPO_ROOT)}",
         f"Catalog size: {len(items)} reading types",

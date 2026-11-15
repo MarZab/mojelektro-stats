@@ -1,8 +1,8 @@
 # Dev stack for the Moj Elektro integration.
 #
-#   make dev-up      # start HA + InfluxDB
-#   make dev-logs    # tail HA logs
-#   make dev-down    # stop
+#   mise run dev:up      # start HA + InfluxDB
+#   mise run dev:logs    # tail HA logs
+#   mise run dev:down    # stop
 #
 # HA at http://localhost:8123 (first run: create an owner account, then add the
 # Moj Elektro integration via Settings → Devices & Services → Add Integration).
